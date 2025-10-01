@@ -39,7 +39,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       where: { id: decoded.id },
     });
 
-    req.user = us6er;
+    req.user = user;
 
     next();
   } catch (err) {
