@@ -3,10 +3,8 @@ import type { CreateCompanyDto } from '../dtos/company-dto.js';
 
 const companyRepository = {
   async create(companyData: CreateCompanyDto) {
-    return prisma.companie.create({
-      data: {
-        companyData,
-      },
+    return prisma.company.create({
+      data: companyData,
     });
   },
   async update() {},

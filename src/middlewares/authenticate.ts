@@ -39,6 +39,10 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       where: { id: decoded.id },
     });
 
+    if (!user) {
+      return next(new NotFoundError('사용자를 찾을 수 없습니다.'));
+    }
+
     req.user = user;
 
     next();
