@@ -1,7 +1,8 @@
 import prisma from '../configs/prisma-client.js';
+import type { CreateCompanyDto } from '../dtos/company-dto.js';
 
 const companyRepository = {
-  async create(companyData) {
+  async create(companyData: CreateCompanyDto) {
     return prisma.companie.create({
       data: {
         companyData,

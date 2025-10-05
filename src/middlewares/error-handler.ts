@@ -1,6 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
-import { PrismaClientValidationError } from '@prisma/client/runtime/library.js';
+import {
+  PrismaClientValidationError,
+  PrismaClientKnownRequestError,
+} from '@prisma/client/runtime/library.js';
 import { ZodError } from 'zod';
 import {
   AppError,
@@ -33,9 +36,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   if (err instanceof PrismaClientValidationError) {
     console.error('Prisma Validation Error:', err.message);
     return res.status(400).json({ message: 'Prisma 쿼리 데이터가 유효하지 않습니다.' });
-  }
-
-  if (err instanceof PrismaClientValidationError) {
+  } else if (err instanceof PrismaClientKnownRequestError) {
     console.error('Prisma KnownRequestError:', err.code, err.meta);
 
     switch (err.code) {
