@@ -1,4 +1,9 @@
-import { CreateCompanyDto, GetCompaniesDto, CompanyResponseDto } from '../dtos/company-dto.js';
+import {
+  CreateCompanyDto,
+  GetCompaniesDto,
+  CompanyResponseDto,
+  UpdateCompanyDto,
+} from '../dtos/company-dto.js';
 import companyRepository from '../repositories/company-repository.js';
 
 const companyService = {
@@ -31,8 +36,14 @@ const companyService = {
     };
   },
 
-  async update() {},
-  async delete() {},
+  async update(companyId: number, companyData: UpdateCompanyDto) {
+    const updatedCompany = await companyRepository.update(companyId, companyData);
+    return updatedCompany;
+  },
+
+  async delete(companyId: number) {
+    await companyRepository.delete(companyId);
+  },
 
   async getById() {},
 };

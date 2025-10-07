@@ -9,11 +9,6 @@ export const validate =
       req[part] = validatedData;
       next();
     } catch (e) {
-      if (e instanceof ZodError) {
-        return res.status(400).json({
-          message: '잘못된 요청입니다.',
-        });
-      }
       next(e);
     }
   };

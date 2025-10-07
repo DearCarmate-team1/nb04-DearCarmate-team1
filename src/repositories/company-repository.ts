@@ -1,6 +1,6 @@
 import prisma from '../configs/prisma-client.js';
 import type { Prisma } from '@prisma/client';
-import type { CreateCompanyDto, GetCompaniesDto } from '../dtos/company-dto.js';
+import type { CreateCompanyDto, GetCompaniesDto, UpdateCompanyDto } from '../dtos/company-dto.js';
 
 const companyRepository = {
   async create(companyData: CreateCompanyDto) {
@@ -49,8 +49,27 @@ const companyRepository = {
     return { companies, total };
   },
 
-  async update() {},
-  async delete() {},
+  async update(companyId: number, companyData: UpdateCompanyDto) {
+    const updatedCompany = await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        name: companyData.companyName,
+        authCode: companyData.companyCode,
+      },
+      include: { _count: { select: { User: true } } },
+    });
+    return {
+      id: updatedCompany.id,
+      companyName: updatedCompany.name,
+      companyCode: updatedCompany.authCode,
+      userCount: updatedCompany._count.User,
+    };
+  },
+
+  async delete(companyId: number) {
+    await prisma.company.delete({ where: { id: companyId } });
+  },
+
   async getById() {},
 };
 
