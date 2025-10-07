@@ -6,7 +6,7 @@ import { validate } from '../middlewares/validate.js';
 
 const router = Router();
 
-router.post('/login', validate(loginSchema), asyncHandler(authController.login));
-router.post('/refresh', validate(refreshSchema), asyncHandler(authController.refresh));
+router.post('/login', validate(loginSchema, 'body'), asyncHandler(authController.login));
+router.post('/refresh', validate(refreshSchema, 'body'), asyncHandler(authController.refresh));
 
 export default router;
