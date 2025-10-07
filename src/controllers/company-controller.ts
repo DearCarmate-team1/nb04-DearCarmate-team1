@@ -4,7 +4,7 @@ import companyServie from '../services/company-service.js';
 const companyController = {
   async create(req: Request, res: Response) {
     if (!req.user) {
-      res.status(401).json({ message: 'Unauthorized' });
+      res.status(401).json({ message: '관리자 권한이 필요합니다' });
       return;
     }
     const companyData = req.body;
