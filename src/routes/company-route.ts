@@ -1,11 +1,23 @@
 import { Router } from 'express';
-import asyncHandler from '../configs/async-handler';
-import companyController from '../controllers/company-controller';
-import { createCompanySchema } from '../dtos/company-dto';
-import { validate } from '../middlewares/validate';
+import asyncHandler from '../configs/async-handler.js';
+import companyController from '../controllers/company-controller.js';
+import { createCompanySchema, getCompaniesSchema } from '../dtos/company-dto.js';
+import { authenticate } from '../middlewares/authenticate.js';
+import { validate } from '../middlewares/validate.js';
 
 const router = Router();
 
-router.post('/', validate(createCompanySchema), asyncHandler(companyController.create));
+router.post(
+  '/',
+  authenticate,
+  validate(createCompanySchema, 'body'),
+  asyncHandler(companyController.create),
+);
+router.get(
+  '/',
+  authenticate,
+  validate(getCompaniesSchema, 'query'),
+  asyncHandler(companyController.getAll),
+);
 
 export default router;
