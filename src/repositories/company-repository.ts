@@ -1,5 +1,6 @@
 import prisma from '../configs/prisma-client.js';
 import type { Prisma } from '@prisma/client';
+<<<<<<< HEAD
 import type {
   CreateCompanyDto,
   GetCompaniesDto,
@@ -7,6 +8,9 @@ import type {
   GetUsersByCompanyDto,
 } from '../dtos/company-dto.js';
 import type { PrismaTransactionClient } from '../types/prisma.js';
+=======
+import type { CreateCompanyDto, GetCompaniesDto, UpdateCompanyDto } from '../dtos/company-dto.js';
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
 
 const companyRepository = {
   // 회사 등록
@@ -55,6 +59,7 @@ const companyRepository = {
       return { companies, total };
   },
 
+<<<<<<< HEAD
   // 회사별 유저 조회
   async getUsersByCompany(query: GetUsersByCompanyDto, tx?: PrismaTransactionClient) {
     const db = tx ?? prisma;
@@ -90,6 +95,8 @@ const companyRepository = {
   },
 
   // 회사 수정
+=======
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
   async update(companyId: number, companyData: UpdateCompanyDto) {
     const updatedCompany = await prisma.company.update({
       where: { id: companyId },
@@ -107,11 +114,15 @@ const companyRepository = {
     };
   },
 
+<<<<<<< HEAD
   // 회사 삭제
+=======
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
   async delete(companyId: number) {
     await prisma.company.delete({ where: { id: companyId } });
   },
 
+<<<<<<< HEAD
   // 유저 회원가입 시, 회사명과 인증코드를 검증하기 위해 추가
   async findByNameAndAuthCode(name: string, authCode: string) {
     return prisma.company.findFirst({
@@ -120,6 +131,9 @@ const companyRepository = {
       },
     });
   },
+=======
+  async getById() {},
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
 };
 
 export default companyRepository;

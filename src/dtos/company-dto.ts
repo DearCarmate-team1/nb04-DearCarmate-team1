@@ -34,6 +34,7 @@ export const updateCompanySchema = z.object({
 });
 
 // --- Zod 스키마에서 타입 추론 (DTO 정의) ---
+
 export type CreateCompanyDto = z.infer<typeof createCompanySchema>;
 export type GetCompaniesDto = z.infer<typeof getCompaniesSchema>;
 export type CompanyIdParamsDto = z.infer<typeof companyIdParamsSchema>;

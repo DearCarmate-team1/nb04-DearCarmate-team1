@@ -10,6 +10,7 @@ export const validate =
       next();
     } catch (e) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       if (e instanceof ZodError) {
         return res.status(400).json({
@@ -17,6 +18,8 @@ export const validate =
         });
       }
 >>>>>>> ed7378b (feat: company create 누락된 요소 추가)
+=======
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
       next(e);
     }
   };

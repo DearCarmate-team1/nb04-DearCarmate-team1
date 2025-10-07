@@ -3,8 +3,11 @@ import {
   GetCompaniesDto,
   CompanyResponseDto,
   UpdateCompanyDto,
+<<<<<<< HEAD
   GetUsersByCompanyDto,
   UserWithCompanyResponseDto,
+=======
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
 } from '../dtos/company-dto.js';
 import companyRepository from '../repositories/company-repository.js';
 import prisma from '../configs/prisma-client.js';
@@ -45,6 +48,7 @@ const companyService = {
     };
   },
 
+<<<<<<< HEAD
   // 회사별 유저 조회
   async getUsersByCompany(query: GetUsersByCompanyDto) {
 
@@ -77,12 +81,17 @@ const companyService = {
   },
 
   // 회사 수정
+=======
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
   async update(companyId: number, companyData: UpdateCompanyDto) {
     const updatedCompany = await companyRepository.update(companyId, companyData);
     return updatedCompany;
   },
 
+<<<<<<< HEAD
   // 회사 삭제
+=======
+>>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
   async delete(companyId: number) {
     await companyRepository.delete(companyId);
   },
