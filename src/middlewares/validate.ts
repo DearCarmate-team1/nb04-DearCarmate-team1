@@ -1,4 +1,4 @@
-import { ZodObject } from 'zod';
+import { ZodObject, ZodError } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 
 export const validate =
@@ -8,10 +8,12 @@ export const validate =
       const validatedData = schema.parse(req[part]);
       req[part] = validatedData;
       next();
-    } catch (e: any) {
-      return res.status(400).json({
-        message: 'Validation Error',
-        errors: e.errors,
-      });
+    } catch (e) {
+      if (e instanceof ZodError) {
+        return res.status(400).json({
+          message: '잘못된 요청입니다.',
+        });
+      }
+      next(e);
     }
   };

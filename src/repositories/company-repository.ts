@@ -4,9 +4,19 @@ import type { CreateCompanyDto, GetCompaniesDto } from '../dtos/company-dto.js';
 
 const companyRepository = {
   async create(companyData: CreateCompanyDto) {
-    return prisma.company.create({
-      data: companyData,
+    const createdCompany = await prisma.company.create({
+      data: {
+        name: companyData.companyName,
+        authCode: companyData.companyCode,
+      },
+      include: { _count: { select: { User: true } } },
     });
+    return {
+      id: createdCompany.id,
+      companyName: createdCompany.name,
+      companyCode: createdCompany.authCode,
+      userCount: createdCompany._count.User,
+    };
   },
 
   async getAll(query: GetCompaniesDto) {
