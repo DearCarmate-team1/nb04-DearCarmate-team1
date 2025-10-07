@@ -36,12 +36,20 @@ const companyController = {
   },
 
   async delete(req: Request, res: Response) {
+    if (!req.user) {
+      res.status(401).json({ message: '관리자 권한이 필요합니다' });
+      return;
+    }
     const { companyId } = req.params;
     await companyServie.delete(Number(companyId));
     res.status(200).json({ message: '회사 삭제 성공' });
   },
 
-  async getById() {}, // 참조하는 변수에 따라
+  async getUsersByCompany(req: Request, res: Response) {
+    const query = req.query;
+    const result = await companyServie.getUsersByCompany(query);
+    res.status(200).json(result);
+  },
 };
 
 export default companyController;

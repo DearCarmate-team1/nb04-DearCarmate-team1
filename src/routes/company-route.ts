@@ -6,6 +6,7 @@ import {
   getCompaniesSchema,
   companyIdParamsSchema,
   updateCompanySchema,
+  getUsersByCompanySchema,
 } from '../dtos/company-dto.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import { validate } from '../middlewares/validate.js';
@@ -24,7 +25,12 @@ router.get(
   validate(getCompaniesSchema, 'query'),
   asyncHandler(companyController.getAll),
 );
-
+router.get(
+  '/users',
+  authenticate,
+  validate(getUsersByCompanySchema, 'query'),
+  asyncHandler(companyController.getUsersByCompany),
+);
 router.patch(
   '/:companyId',
   authenticate,

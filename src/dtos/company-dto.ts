@@ -14,6 +14,14 @@ export const getCompaniesSchema = z.object({
   keyword: z.string().optional(),
 });
 
+// GET /companies/users 쿼리 파라미터 스키마
+export const getUsersByCompanySchema = z.object({
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().optional(),
+  searchBy: z.enum(['companyName', 'name', 'email']).optional(),
+  keyword: z.string().optional(),
+});
+
 export const companyIdParamsSchema = z.object({
   companyId: z.number().int().positive(),
 });
@@ -28,6 +36,7 @@ export type CreateCompanyDto = z.infer<typeof createCompanySchema>;
 export type GetCompaniesDto = z.infer<typeof getCompaniesSchema>;
 export type CompanyIdParamsDto = z.infer<typeof companyIdParamsSchema>;
 export type UpdateCompanyDto = z.infer<typeof updateCompanySchema>;
+export type GetUsersByCompanyDto = z.infer<typeof getUsersByCompanySchema>;
 
 // API 응답을 위한 DTO
 export type CompanyResponseDto = {
@@ -35,4 +44,16 @@ export type CompanyResponseDto = {
   companyName: string;
   companyCode: string;
   userCount: number;
+};
+
+// 회사별 유저 조회 응답 DTO
+export type UserWithCompanyResponseDto = {
+  id: number;
+  name: string;
+  email: string;
+  employeeNumber: string;
+  phoneNumber: string;
+  company: {
+    companyName: string;
+  };
 };

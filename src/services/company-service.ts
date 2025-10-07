@@ -3,6 +3,8 @@ import {
   GetCompaniesDto,
   CompanyResponseDto,
   UpdateCompanyDto,
+  GetUsersByCompanyDto,
+  UserWithCompanyResponseDto,
 } from '../dtos/company-dto.js';
 import companyRepository from '../repositories/company-repository.js';
 
@@ -45,7 +47,30 @@ const companyService = {
     await companyRepository.delete(companyId);
   },
 
-  async getById() {},
+  async getUsersByCompany(query: GetUsersByCompanyDto) {
+    const { users, total } = await companyRepository.getUsersByCompany(query);
+
+    const { page = 1, pageSize = 10 } = query;
+
+    const mappedData: UserWithCompanyResponseDto[] = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      employeeNumber: user.employeeNumber,
+      phoneNumber: user.phoneNumber,
+      company: {
+        companyName: user.company.name,
+      },
+    }));
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      currentPage: page,
+      totalPages,
+      totalItemCount: total,
+      data: mappedData,
+    };
+  },
 };
 
 export default companyService;
