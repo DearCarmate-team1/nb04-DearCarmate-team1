@@ -14,13 +14,15 @@ export const getCompaniesSchema = z.object({
   keyword: z.string().optional(),
 });
 
-// GET /companies/:companyId/users: 회사별 유저 목록 조회 쿼리 DTO 스키마
+
+// GET /companies/users 쿼리 파라미터 스키마
 export const getUsersByCompanySchema = z.object({
-  page: z.string().transform(Number).optional(),
-  pageSize: z.string().transform(Number).optional(),  
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().optional(),
   searchBy: z.enum(['companyName', 'name', 'email']).optional(),
   keyword: z.string().optional(),
 });
+
 
 // URL Path Params: 회사 ID 파라미터 DTO 스키마
 export const companyIdParamsSchema = z.object({
@@ -51,7 +53,7 @@ export type CompanyResponseDto = {
   userCount: number;
 };
 
-// 회사별 유저 목록 응답 DTO
+// 회사별 유저 조회 응답 DTO
 export type UserWithCompanyResponseDto = {
   id: number;
   name: string;

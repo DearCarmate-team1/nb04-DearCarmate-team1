@@ -1,16 +1,22 @@
 import prisma from '../configs/prisma-client.js';
 import type { Prisma } from '@prisma/client';
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 8deac88 (feat: 회사별 유저 조회 기능 구현)
 import type {
   CreateCompanyDto,
   GetCompaniesDto,
   UpdateCompanyDto,
   GetUsersByCompanyDto,
 } from '../dtos/company-dto.js';
+<<<<<<< HEAD
 import type { PrismaTransactionClient } from '../types/prisma.js';
 =======
 import type { CreateCompanyDto, GetCompaniesDto, UpdateCompanyDto } from '../dtos/company-dto.js';
 >>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
+=======
+>>>>>>> 8deac88 (feat: 회사별 유저 조회 기능 구현)
 
 const companyRepository = {
   // 회사 등록
@@ -123,6 +129,7 @@ const companyRepository = {
   },
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   // 유저 회원가입 시, 회사명과 인증코드를 검증하기 위해 추가
   async findByNameAndAuthCode(name: string, authCode: string) {
     return prisma.company.findFirst({
@@ -134,6 +141,42 @@ const companyRepository = {
 =======
   async getById() {},
 >>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
+=======
+  async getUsersByCompany(query: GetUsersByCompanyDto) {
+    const { page = 1, pageSize = 10, searchBy, keyword } = query;
+
+    const skip = (page - 1) * pageSize;
+    const take = pageSize;
+
+    // 검색 조건 (where) 설정
+    let where: Prisma.UserWhereInput = {};
+    if (searchBy && keyword) {
+      if (searchBy === 'name') {
+        where = { name: { contains: keyword, mode: 'insensitive' } };
+      } else if (searchBy === 'email') {
+        where = { email: { contains: keyword, mode: 'insensitive' } };
+      } else if (searchBy === 'companyName') {
+        where = { company: { name: { contains: keyword, mode: 'insensitive' } } };
+      }
+    }
+
+    // 트랜잭션 사용하여 데이터와 총 개수 동시 조회
+    const [users, total] = await prisma.$transaction([
+      // 실제 데이터 목록 조회
+      prisma.user.findMany({
+        where,
+        skip,
+        take,
+        include: { company: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      // 전체 데이터 개수 조회
+      prisma.user.count({ where }),
+    ]);
+
+    return { users, total };
+  },
+>>>>>>> 8deac88 (feat: 회사별 유저 조회 기능 구현)
 };
 
 export default companyRepository;
