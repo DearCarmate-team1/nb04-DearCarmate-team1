@@ -8,6 +8,7 @@ import type {
 } from '../dtos/company-dto.js';
 
 const companyRepository = {
+  // 회사 등록
   async create(companyData: CreateCompanyDto) {
     const createdCompany = await prisma.company.create({
       data: {
@@ -24,6 +25,7 @@ const companyRepository = {
     };
   },
 
+  // 회사 목록 조회
   async getAll(query: GetCompaniesDto) {
     const { page = 1, pageSize = 10, searchBy, keyword } = query;
 
@@ -54,27 +56,7 @@ const companyRepository = {
     return { companies, total };
   },
 
-  async update(companyId: number, companyData: UpdateCompanyDto) {
-    const updatedCompany = await prisma.company.update({
-      where: { id: companyId },
-      data: {
-        name: companyData.companyName,
-        authCode: companyData.companyCode,
-      },
-      include: { _count: { select: { User: true } } },
-    });
-    return {
-      id: updatedCompany.id,
-      companyName: updatedCompany.name,
-      companyCode: updatedCompany.authCode,
-      userCount: updatedCompany._count.User,
-    };
-  },
-
-  async delete(companyId: number) {
-    await prisma.company.delete({ where: { id: companyId } });
-  },
-
+  // 회사별 유저 조회
   async getUsersByCompany(query: GetUsersByCompanyDto) {
     const { page = 1, pageSize = 10, searchBy, keyword } = query;
 
@@ -108,6 +90,29 @@ const companyRepository = {
     ]);
 
     return { users, total };
+  },
+
+  // 회사 수정
+  async update(companyId: number, companyData: UpdateCompanyDto) {
+    const updatedCompany = await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        name: companyData.companyName,
+        authCode: companyData.companyCode,
+      },
+      include: { _count: { select: { User: true } } },
+    });
+    return {
+      id: updatedCompany.id,
+      companyName: updatedCompany.name,
+      companyCode: updatedCompany.authCode,
+      userCount: updatedCompany._count.User,
+    };
+  },
+
+  // 회사 삭제
+  async delete(companyId: number) {
+    await prisma.company.delete({ where: { id: companyId } });
   },
 };
 
