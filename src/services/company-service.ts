@@ -54,6 +54,7 @@ const companyService = {
   },
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   // 회사별 유저 조회
   async getUsersByCompany(query: GetUsersByCompanyDto) {
 
@@ -103,6 +104,9 @@ const companyService = {
 
 <<<<<<< HEAD
 =======
+=======
+  // 회사별 유저 조회
+>>>>>>> 3cd660d (refactor: 회사 관련 주석 추가)
   async getUsersByCompany(query: GetUsersByCompanyDto) {
     const { users, total } = await companyRepository.getUsersByCompany(query);
 
@@ -127,7 +131,21 @@ const companyService = {
       data: mappedData,
     };
   },
+<<<<<<< HEAD
 >>>>>>> 8deac88 (feat: 회사별 유저 조회 기능 구현)
+=======
+
+  // 회사 수정
+  async update(companyId: number, companyData: UpdateCompanyDto) {
+    const updatedCompany = await companyRepository.update(companyId, companyData);
+    return updatedCompany;
+  },
+
+  // 회사 삭제
+  async delete(companyId: number) {
+    await companyRepository.delete(companyId);
+  },
+>>>>>>> 3cd660d (refactor: 회사 관련 주석 추가)
 };
 
 export default companyService;

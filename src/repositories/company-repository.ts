@@ -37,8 +37,12 @@ const companyRepository = {
   },
 
   // 회사 목록 조회
+<<<<<<< HEAD
   async getAll(query: GetCompaniesDto, tx?: PrismaTransactionClient) {
     const db = tx ?? prisma;
+=======
+  async getAll(query: GetCompaniesDto) {
+>>>>>>> 3cd660d (refactor: 회사 관련 주석 추가)
     const { page = 1, pageSize = 10, searchBy, keyword } = query;
 
     const skip = (page - 1) * pageSize;
@@ -65,6 +69,7 @@ const companyRepository = {
       return { companies, total };
   },
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   // 회사별 유저 조회
   async getUsersByCompany(query: GetUsersByCompanyDto, tx?: PrismaTransactionClient) {
@@ -142,6 +147,9 @@ const companyRepository = {
   async getById() {},
 >>>>>>> 41c683e (feat: 회사 수정 및 삭제 구현)
 =======
+=======
+  // 회사별 유저 조회
+>>>>>>> 3cd660d (refactor: 회사 관련 주석 추가)
   async getUsersByCompany(query: GetUsersByCompanyDto) {
     const { page = 1, pageSize = 10, searchBy, keyword } = query;
 
@@ -176,7 +184,33 @@ const companyRepository = {
 
     return { users, total };
   },
+<<<<<<< HEAD
 >>>>>>> 8deac88 (feat: 회사별 유저 조회 기능 구현)
+=======
+
+  // 회사 수정
+  async update(companyId: number, companyData: UpdateCompanyDto) {
+    const updatedCompany = await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        name: companyData.companyName,
+        authCode: companyData.companyCode,
+      },
+      include: { _count: { select: { User: true } } },
+    });
+    return {
+      id: updatedCompany.id,
+      companyName: updatedCompany.name,
+      companyCode: updatedCompany.authCode,
+      userCount: updatedCompany._count.User,
+    };
+  },
+
+  // 회사 삭제
+  async delete(companyId: number) {
+    await prisma.company.delete({ where: { id: companyId } });
+  },
+>>>>>>> 3cd660d (refactor: 회사 관련 주석 추가)
 };
 
 export default companyRepository;

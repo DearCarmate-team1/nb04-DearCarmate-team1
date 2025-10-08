@@ -14,8 +14,8 @@ export const getCompaniesSchema = z.object({
   keyword: z.string().optional(),
 });
 
-
 // GET /companies/users 쿼리 파라미터 스키마
+
 export const getUsersByCompanySchema = z.object({
   page: z.number().int().positive().optional(),
   pageSize: z.number().int().positive().optional(),
@@ -36,7 +36,6 @@ export const updateCompanySchema = z.object({
 });
 
 // --- Zod 스키마에서 타입 추론 (DTO 정의) ---
-
 export type CreateCompanyDto = z.infer<typeof createCompanySchema>;
 export type GetCompaniesDto = z.infer<typeof getCompaniesSchema>;
 export type CompanyIdParamsDto = z.infer<typeof companyIdParamsSchema>;
@@ -53,7 +52,7 @@ export type CompanyResponseDto = {
   userCount: number;
 };
 
-// 회사별 유저 조회 응답 DTO
+// 회사별 유저 목록 응답 DTO
 export type UserWithCompanyResponseDto = {
   id: number;
   name: string;
