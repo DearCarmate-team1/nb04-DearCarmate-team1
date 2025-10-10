@@ -19,6 +19,9 @@
   "type": "commonjs",
   "devDependencies": {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
@@ -35,15 +38,23 @@
   "dependencies": {
     "@prisma/client": "^6.16.2",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "bcrypt": "^6.0.0",
+=======
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+>>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.16.2",
     "zod": "^4.1.11"
+<<<<<<< HEAD
 =======
     "express": "^5.1.0",
     "prisma": "^6.16.2"
 >>>>>>> 66fe3f8 (feat: 프로젝트 기본 파일 및 구조 세팅)
+=======
+>>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
   }
 }

@@ -233,7 +233,27 @@ const companyRepository = {
   async delete(companyId: number) {
     await prisma.company.delete({ where: { id: companyId } });
   },
+<<<<<<< HEAD
 >>>>>>> 3cd660d (refactor: 회사 관련 주석 추가)
+=======
+<<<<<<< HEAD
+=======
+
+  // 유저 회원가입 시, 회사명과 인증코드를 검증하기 위해 추가
+  async findByNameAndAuthCode(name: string, authCode: string) {
+    return prisma.company.findFirst({
+      where: {
+        AND: [{ name }, { authCode }],
+      },
+    });
+  },
+
+  async update() {},
+  async delete() {},
+  async getAll() {},
+  async getById() {},
+>>>>>>> ccd47ad (feat: 유저 CRUD API 유효성검사 제외)
+>>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
 };
 
 export default companyRepository;
