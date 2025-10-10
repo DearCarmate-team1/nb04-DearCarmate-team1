@@ -5,11 +5,6 @@ import bcrypt from 'bcrypt';
 
 const userService = {
   async createUser(userData: CreateUserDto) {
-    // 1. 비밀번호와 비밀번호 확인 일치 여부 확인
-    if (userData.password !== userData.passwordConfirmation) {
-      throw new Error('비밀번호와 비밀번호 확인이 일치하지 않습니다');
-    }
-
     // 2. 이메일 중복 확인
     const existingUser = await userRepository.findByEmail(userData.email);
     if (existingUser) {
@@ -105,11 +100,8 @@ const userService = {
 
     const dataToUpdate: { [key: string]: any } = { ...updateFields };
 
-    // 3. 새로운 비밀번호가 있다면, 검증 후 해싱
+    // 3. 새로운 비밀번호가 있다면 해싱
     if (password) {
-      if (password !== passwordConfirmation) {
-        throw new Error('비밀번호와 비밀번호 확인이 일치하지 않습니다');
-      }
       dataToUpdate.password = await bcrypt.hash(password, 10);
     }
 
