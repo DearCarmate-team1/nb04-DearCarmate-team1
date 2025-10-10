@@ -3,7 +3,7 @@ import { z } from 'zod';
 // POST /companies: 회사 등록 요청 DTO 스키마
 export const createCompanySchema = z.object({
   companyName: z.string().min(1, { message: '회사 이름은 필수입니다.' }),
-  companyCode: z.string().length(6, { message: '인증 코드는 6자리여야 합니다.' }),
+  companyCode: z.string().min(1, { message: '기업 인증 코드는 필수입니다.' }),
 });
 
 // GET /companies: 회사 목록 조회 쿼리 DTO 스키마
@@ -30,7 +30,7 @@ export const companyIdParamsSchema = z.object({
 // PATCH /companies/:companyId: 회사 정보 수정 요청 DTO 스키마
 export const updateCompanySchema = z.object({
   companyName: z.string().min(1, { message: '회사 이름은 필수입니다.' }),
-  companyCode: z.string().length(6, { message: '인증 코드는 6자리여야 합니다.' }),
+  companyCode: z.string().min(1, { message: '기업 인증 코드는 필수입니다.' }),
 });
 
 // --- Zod 스키마에서 타입 추론 (DTO 정의) ---
