@@ -6,10 +6,59 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  authCode  String   @unique @map("auth_code") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // cars  Car[]
+  User User[]
+
+  @@map("companies")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String   @db.VarChar(20)
+  email          String   @unique @db.VarChar(100)
+  password       String   @db.VarChar(255)
+  employeeNumber String   @unique @map("employee_number") @db.VarChar(20)
+  phoneNumber    String   @map("phone_number") @db.VarChar(20)
+  imageUrl       String?  @map("image_url") @db.VarChar(255)
+  isAdmin        Boolean  @default(false) @map("is_admin")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId Int     @map("company_id")
+
+  @@map("users")
+  Customers Customer[]
+}
+
+model Customer {
+id Int @id @default(autoincrement())
+name String
+gender String 
+phone String
+ageGroup String? 
+region String? 
+email String? @unique
+memo String?
+contractCount Int @default(0) 
+
+companyId Int
+company User @relation(fields: [companyId], references: [id])
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
 }
