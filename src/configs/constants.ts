@@ -12,3 +12,5 @@ function getEnvVar(name: string): string {
 
 export const ACCESS_TOKEN_SECRET = getEnvVar('ACCESS_TOKEN_SECRET');
 export const REFRESH_TOKEN_SECRET = getEnvVar('REFRESH_TOKEN_SECRET');
+export const ACCESS_TOKEN_EXPIRES_IN = getEnvVar('ACCESS_TOKEN_EXPIRES_IN');
+export const REFRESH_TOKEN_EXPIRES_IN = getEnvVar('REFRESH_TOKEN_EXPIRES_IN');
