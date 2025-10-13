@@ -89,13 +89,11 @@ const userService = {
     const existingUser = await userRepository.findById(id);
     if (!existingUser) {
       throw new NotFoundError('존재하지 않는 유저입니다.');
-
     }
 
     // 2. 현재 비밀번호 검증
     if (!currentPassword) {
       throw new BadRequestError('현재 비밀번호를 입력해주세요.');
-
     }
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
@@ -103,17 +101,12 @@ const userService = {
     );
     if (!isPasswordValid) {
       throw new BadRequestError('현재 비밀번호가 일치하지 않습니다.');
-
     }
 
     const dataToUpdate: { [key: string]: any } = { ...updateFields };
 
-
-    // 3. 새로운 비밀번호가 있다면, 검증 후 해싱
+    // 3. 새로운 비밀번호가 있다면 해싱
     if (password) {
-      if (password !== passwordConfirmation) {
-        throw new Error('비밀번호와 비밀번호 확인이 일치하지 않습니다');
-      }
       dataToUpdate.password = await bcrypt.hash(password, 10);
     }
 

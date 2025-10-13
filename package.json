@@ -6,55 +6,33 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-<<<<<<< HEAD
     "start": "node dist/app.js",
     "dev": "nodemon --watch src --exec \"npm run build && npm start\""
-=======
-    "start": "node dist/app.js"
->>>>>>> 66fe3f8 (feat: 프로젝트 기본 파일 및 구조 세팅)
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.6.1",
     "eslint": "^9.36.0",
     "nodemon": "^3.1.10",
     "npm-run-all": "^4.1.5",
-=======
-    "eslint": "^9.36.0",
->>>>>>> 66fe3f8 (feat: 프로젝트 기본 파일 및 구조 세팅)
     "prettier": "^3.6.2",
     "typescript": "^5.9.2"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "bcrypt": "^6.0.0",
-=======
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
->>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.16.2",
     "zod": "^4.1.11"
-<<<<<<< HEAD
-=======
-    "express": "^5.1.0",
-    "prisma": "^6.16.2"
->>>>>>> 66fe3f8 (feat: 프로젝트 기본 파일 및 구조 세팅)
-=======
->>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
   }
 }
