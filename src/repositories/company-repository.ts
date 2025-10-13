@@ -111,8 +111,6 @@ const companyRepository = {
   async delete(companyId: number) {
     await prisma.company.delete({ where: { id: companyId } });
   },
-<<<<<<< HEAD
-=======
 
   // 유저 회원가입 시, 회사명과 인증코드를 검증하기 위해 추가
   async findByNameAndAuthCode(name: string, authCode: string) {
@@ -122,12 +120,6 @@ const companyRepository = {
       },
     });
   },
-
-  async update() {},
-  async delete() {},
-  async getAll() {},
-  async getById() {},
->>>>>>> ccd47ad (feat: 유저 CRUD API 유효성검사 제외)
 };
 
 export default companyRepository;

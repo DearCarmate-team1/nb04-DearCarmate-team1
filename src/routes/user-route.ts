@@ -7,10 +7,10 @@ import { authenticate } from '../middlewares/authenticate.js';
 
 const router = Router();
 
-router.post('/', validate(createUserSchema), asyncHandler(userController.createUser));
+router.post('/', validate(createUserSchema, 'body'), asyncHandler(userController.createUser));
 
 router.get('/me', authenticate, asyncHandler(userController.getMe));
-router.patch('/me', authenticate, validate(updateUserSchema), asyncHandler(userController.updateMe));
+router.patch('/me', authenticate, validate(updateUserSchema, 'body'), asyncHandler(userController.updateMe));
 router.delete('/me', authenticate, asyncHandler(userController.deleteMe));
 
 // ------ 관리자용 API ------
