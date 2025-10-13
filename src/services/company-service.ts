@@ -8,12 +8,33 @@ import {
 } from '../dtos/company-dto.js';
 import companyRepository from '../repositories/company-repository.js';
 import prisma from '../configs/prisma-client.js';
+import { ConflictError } from '../configs/custom-error.js';
 
 const companyService = {
   // 회사 등록
   async create(companyData: CreateCompanyDto) {
+
+    // 회사 이름 중복 확인
+    const existingByName = await companyRepository.findByName(companyData.companyName);
+    if (existingByName) {
+      throw new ConflictError('이미 사용 중인 회사 이름입니다.');
+    }
+
+    // 회사 코드 중복 확인
+    const existingByCode = await companyRepository.findByAuthCode(companyData.companyCode);
+    if (existingByCode) {
+      throw new ConflictError('이미 사용 중인 회사 코드입니다.');
+    }
+
+    // 회사 생성
     const newCompany = await companyRepository.create(companyData);
-    return newCompany;
+    const responseDto : CompanyResponseDto = {
+      id: newCompany.id,
+      companyName: newCompany.name,
+      companyCode: newCompany.authCode,
+      userCount: newCompany._count.User,
+    } 
+    return responseDto;
   },
 
   // 회사 목록 조회
@@ -79,7 +100,13 @@ const companyService = {
   // 회사 수정
   async update(companyId: number, companyData: UpdateCompanyDto) {
     const updatedCompany = await companyRepository.update(companyId, companyData);
-    return updatedCompany;
+    const responseDto: CompanyResponseDto = {
+      id: updatedCompany.id,
+      companyName: updatedCompany.name,
+      companyCode: updatedCompany.authCode,
+      userCount: updatedCompany._count.User,
+    }
+    return responseDto;
   },
 
   // 회사 삭제
