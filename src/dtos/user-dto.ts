@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { z } from 'zod';
 
 export const createUserSchema = z
@@ -33,18 +32,6 @@ export const updateUserSchema = z
 
 // 스키마에서 타입 추론 (DTO 역할)
 export type CreateUserDto = z.infer<typeof createUserSchema>;
-=======
-export interface CreateUserDto {
-  name: string;
-  email: string;
-  employeeNumber: string;
-  phoneNumber: string;
-  password: string;
-  passwordConfirmation: string;
-  company: string;
-  companyCode: string;
-}
->>>>>>> ee42218 (feat: 유저 CRUD API 유효성검사 제외)
 
 export interface UpdateUserDto {
   currentPassword?: string;
