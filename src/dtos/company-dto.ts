@@ -10,21 +10,21 @@ export const createCompanySchema = z.object({
 export const getCompaniesSchema = z.object({
   page: z.string().transform(Number).optional(),
   pageSize: z.string().transform(Number).optional(),
-  searchBy: z.literal('companyName').optional(),
+  searchBy: z.enum(['companyName', 'companyCode']).optional(),
   keyword: z.string().optional(),
 });
 
 // GET /companies/:companyId/users: 회사별 유저 목록 조회 쿼리 DTO 스키마
 export const getUsersByCompanySchema = z.object({
-  page: z.number().int().positive().optional(),
-  pageSize: z.number().int().positive().optional(),
+  page: z.string().transform(Number).optional(),
+  pageSize: z.string().transform(Number).optional(),  
   searchBy: z.enum(['companyName', 'name', 'email']).optional(),
   keyword: z.string().optional(),
 });
 
 // URL Path Params: 회사 ID 파라미터 DTO 스키마
 export const companyIdParamsSchema = z.object({
-  companyId: z.number().int().positive(),
+  companyId: z.coerce.number().int().positive(),
 });
 
 // PATCH /companies/:companyId: 회사 정보 수정 요청 DTO 스키마

@@ -35,11 +35,12 @@ const companyRepository = {
     const take = pageSize;
 
     // 검색 조건 (where) 설정
-    const where: Prisma.CompanyWhereInput =
-      searchBy === 'companyName' && keyword
-        ? { name: { contains: keyword, mode: 'insensitive' } }
-        : {};
-
+    const where: Prisma.CompanyWhereInput = {};
+    if ( searchBy === 'companyName' && keyword) {
+      where.name = { contains: keyword, mode: 'insensitive' };
+    } else if (searchBy === 'companyCode' && keyword) {
+      where.authCode = { contains: keyword, mode: 'insensitive' };
+    }
       // 실제 데이터 목록 조회
       const companies = await db.company.findMany({
         where,

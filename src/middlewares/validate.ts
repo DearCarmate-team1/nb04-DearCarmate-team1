@@ -6,7 +6,7 @@ export const validate =
   (req: Request, res: Response, next: NextFunction) => {
     try {
       const validatedData = schema.parse(req[part]);
-      req[part] = validatedData;
+      Object.assign(req[part], validatedData);
       next();
     } catch (e) {
       next(e);
