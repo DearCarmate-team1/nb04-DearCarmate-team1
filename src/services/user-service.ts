@@ -2,13 +2,18 @@ import userRepository from '../repositories/user-repository.js';
 import companyRepository from '../repositories/company-repository.js';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user-dto.js';
 import bcrypt from 'bcrypt';
+import {
+  ConflictError,
+  BadRequestError,
+  NotFoundError,
+} from '../configs/custom-error.js';
 
 const userService = {
   async createUser(userData: CreateUserDto) {
     // 2. 이메일 중복 확인
     const existingUser = await userRepository.findByEmail(userData.email);
     if (existingUser) {
-      throw new Error('이미 존재하는 이메일입니다');
+      throw new ConflictError('이미 존재하는 이메일입니다');
     }
 
     // 3. 회사 정보 검증
@@ -17,7 +22,7 @@ const userService = {
       userData.companyCode
     );
     if (!company) {
-      throw new Error('회사 정보가 올바르지 않습니다.');
+      throw new BadRequestError('회사 정보가 올바르지 않습니다.');
     }
 
     // 4. 비밀번호 해싱
@@ -56,7 +61,7 @@ const userService = {
     const user = await userRepository.findById(id);
 
     if (!user) {
-      throw new Error('존재하지 않는 유저입니다');
+      throw new NotFoundError('존재하지 않는 유저입니다');
     }
 
     // API 명세서에 맞는 응답 형태로 가공
@@ -83,19 +88,19 @@ const userService = {
     // 1. 유저 존재 여부 확인
     const existingUser = await userRepository.findById(id);
     if (!existingUser) {
-      throw new Error('존재하지 않는 유저입니다.');
+      throw new NotFoundError('존재하지 않는 유저입니다.');
     }
 
     // 2. 현재 비밀번호 검증
     if (!currentPassword) {
-      throw new Error('현재 비밀번호를 입력해주세요.');
+      throw new BadRequestError('현재 비밀번호를 입력해주세요.');
     }
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       existingUser.password
     );
     if (!isPasswordValid) {
-      throw new Error('현재 비밀번호가 일치하지 않습니다.');
+      throw new BadRequestError('현재 비밀번호가 일치하지 않습니다.');
     }
 
     const dataToUpdate: { [key: string]: any } = { ...updateFields };
@@ -128,7 +133,7 @@ const userService = {
   async deleteUser(id: number) {
     const existingUser = await userRepository.findById(id);
     if (!existingUser) {
-      throw new Error('존재하지 않는 유저입니다.');
+      throw new NotFoundError('존재하지 않는 유저입니다.');
     }
     await userRepository.delete(id);
   },
