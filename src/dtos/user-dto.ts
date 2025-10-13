@@ -23,7 +23,7 @@ export const updateUserSchema = z
     phoneNumber: z.string().optional(),
     password: z.string().min(8, '비밀번호는 8자 이상이어야 합니다.').optional(),
     passwordConfirmation: z.string().optional(),
-    imageUrl: z.string().optional(),
+    imageUrl: z.string().nullable().optional(),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
     message: '비밀번호와 비밀번호 확인이 일치하지 않습니다.',
