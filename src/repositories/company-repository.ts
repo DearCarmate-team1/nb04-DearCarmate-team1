@@ -59,12 +59,16 @@ const companyRepository = {
 
     // 검색 조건 (where) 설정
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fe060e2 (fix: 기업 코드로 조회하는 로직 수정)
     const where: Prisma.CompanyWhereInput = {};
     if ( searchBy === 'companyName' && keyword) {
       where.name = { contains: keyword, mode: 'insensitive' };
     } else if (searchBy === 'companyCode' && keyword) {
       where.authCode = { contains: keyword, mode: 'insensitive' };
     }
+<<<<<<< HEAD
 =======
     const where: Prisma.CompanyWhereInput =
       searchBy === 'companyName' && keyword
@@ -72,6 +76,8 @@ const companyRepository = {
         : {};
 
 >>>>>>> b19945f (refactor: 트랜잭션 관리를 레포리토리에서 서비스로 이동 및 prismatransactionClient type 정의)
+=======
+>>>>>>> fe060e2 (fix: 기업 코드로 조회하는 로직 수정)
       // 실제 데이터 목록 조회
       const companies = await db.company.findMany({
         where,

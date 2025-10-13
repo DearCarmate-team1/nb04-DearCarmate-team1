@@ -17,8 +17,8 @@ export const getCompaniesSchema = z.object({
 // GET /companies/users 쿼리 파라미터 스키마
 
 export const getUsersByCompanySchema = z.object({
-  page: z.number().int().positive().optional(),
-  pageSize: z.number().int().positive().optional(),
+  page: z.string().transform(Number).optional(),
+  pageSize: z.string().transform(Number).optional(),  
   searchBy: z.enum(['companyName', 'name', 'email']).optional(),
   keyword: z.string().optional(),
 });
