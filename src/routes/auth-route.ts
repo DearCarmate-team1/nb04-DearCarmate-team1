@@ -9,5 +9,4 @@ const router = Router();
 router.post('/login', validate(loginSchema, 'body'), asyncHandler(authController.login));
 router.post('/refresh', validate(refreshSchema, 'body'), asyncHandler(authController.refresh));
 
-
 export default router;
