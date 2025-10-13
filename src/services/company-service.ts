@@ -7,6 +7,7 @@ import {
   UserWithCompanyResponseDto,
 } from '../dtos/company-dto.js';
 import companyRepository from '../repositories/company-repository.js';
+import prisma from '../configs/prisma-client.js';
 
 const companyService = {
   // 회사 등록
@@ -19,7 +20,9 @@ const companyService = {
   async getAll(query: GetCompaniesDto) {
     const { page = 1, pageSize = 10 } = query;
 
-    const { companies, total } = await companyRepository.getAll(query);
+    const { companies, total } = await prisma.$transaction(async (tx) => {
+      return companyRepository.getAll(query, tx);
+    });
 
     // API 명세에 맞게 데이터 가공
     const mappedData: CompanyResponseDto[] = companies.map((company) => ({
@@ -42,7 +45,9 @@ const companyService = {
 
   // 회사별 유저 조회
   async getUsersByCompany(query: GetUsersByCompanyDto) {
-    const { users, total } = await companyRepository.getUsersByCompany(query);
+    const { users, total } = await prisma.$transaction(async (tx) => {
+      return companyRepository.getUsersByCompany(query, tx);
+    });
 
     const { page = 1, pageSize = 10 } = query;
 
