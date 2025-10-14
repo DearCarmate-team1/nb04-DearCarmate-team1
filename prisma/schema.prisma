@@ -20,8 +20,9 @@ model Company {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  // cars  Car[]
-  User User[]
+  cars     Car[]
+  User     User[]
+  Customer Customer[]
 
   @@map("companies")
 }
@@ -44,3 +45,74 @@ model User {
   @@map("users")
 }
 
+model Customer {
+  id            Int     @id @default(autoincrement())
+  name          String  @db.VarChar(50)
+  gender        String  @db.VarChar(10)
+  phoneNumber   String  @map("phone_number") @db.VarChar(20)
+  ageGroup      String? @map("age_group") @db.VarChar(20)
+  region        String? @db.VarChar(50)
+  email         String? @db.VarChar(100)
+  memo          String? @db.Text
+  contractCount Int     @default(0) @map("contract_count") // 계약 횟수
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId Int     @map("company_id")
+
+  @@map("customers")
+}
+
+model Car {
+  id                Int       @id @default(autoincrement())
+  carNumber         String    @unique @map("car_number")
+  manufacturingYear Int       @map("manufacturing_year")
+  mileage           Int       @default(0)
+  price             Int
+  accidentCount     Int       @default(0) @map("accident_count")
+  explanation       String?
+  accidentDetails   String?   @map("accident_details")
+  status            CarStatus @default(possession)
+  modelId           Int
+  companyId         Int
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  model   CarModel @relation(fields: [modelId], references: [id])
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // contracts Contract[]
+
+  @@index([companyId])
+  @@index([modelId])
+  @@map("cars")
+}
+
+model CarModel {
+  id           Int      @id @default(autoincrement())
+  manufacturer String   @db.VarChar(50)
+  model        String   @db.VarChar(50)
+  type         CarType
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  cars Car[]
+
+  @@unique([manufacturer, model])
+  @@map("car_models")
+}
+
+enum CarType {
+  SEDAN
+  SUV
+  COMPACT
+  TRUCK
+  VAN
+}
+
+enum CarStatus {
+  possession // 보유 중
+  contractProceeding // 계약 진행 중
+  contractCompleted // 계약 완료
+}
