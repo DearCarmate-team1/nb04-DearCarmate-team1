@@ -7,6 +7,7 @@ import cors from 'cors';
 import companyRoute from './routes/company-route.js';
 import userRoute from './routes/user-route.js';
 import authRoute from './routes/auth-route.js';
+import imageRoute from './routes/image-route.js';
 import { errorHandler } from './middlewares/error-handler.js';
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(cors(corsOptions));
 app.use('/companies', companyRoute);
 app.use('/users', userRoute);
 app.use('/auth', authRoute);
+app.use('/images', imageRoute);
 
 // 에러 핸들러 미들웨어는 가장 마지막에 등록
 app.use(errorHandler);
