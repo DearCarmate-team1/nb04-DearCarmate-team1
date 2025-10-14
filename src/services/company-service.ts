@@ -8,7 +8,7 @@ import {
 } from '../dtos/company-dto.js';
 import companyRepository from '../repositories/company-repository.js';
 import prisma from '../configs/prisma-client.js';
-import { ConflictError } from '../configs/custom-error.js';
+import { ConflictError, NotFoundError } from '../configs/custom-error.js';
 
 const companyService = {
   // 회사 등록
@@ -99,6 +99,10 @@ const companyService = {
 
   // 회사 수정
   async update(companyId: number, companyData: UpdateCompanyDto) {
+    const existingCompany = await companyRepository.findById(companyId);
+    if (!existingCompany) {
+      throw new NotFoundError('해당 ID의 회사를 찾을 수 없습니다.');
+    }
     const updatedCompany = await companyRepository.update(companyId, companyData);
     const responseDto: CompanyResponseDto = {
       id: updatedCompany.id,
@@ -111,6 +115,10 @@ const companyService = {
 
   // 회사 삭제
   async delete(companyId: number) {
+    const existingCompany = await companyRepository.findById(companyId);
+    if (!existingCompany) {
+      throw new NotFoundError('해당 ID의 회사를 찾을 수 없습니다.');
+    }
     await companyRepository.delete(companyId);
   },
 

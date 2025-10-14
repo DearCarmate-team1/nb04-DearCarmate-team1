@@ -122,6 +122,14 @@ const companyRepository = {
       where: { authCode },
     });
   },
+
+  // ID로 회사 찾기
+  async findById(companyId: number) {
+    return prisma.company.findUnique({
+      where: { id: companyId },
+      include: { _count: { select: { User: true } } },
+    });
+  }
 };
 
 export default companyRepository;
