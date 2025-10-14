@@ -7,7 +7,6 @@ export class CustomerController {
   // 고객 등록
   async create(req: Request, res: Response) {
     try {
-      // ✅ Type Narrowing: req.user 존재 확인
       if (!req.user) {
         return res.status(401).json({ message: "인증된 사용자가 아닙니다." });
       }
