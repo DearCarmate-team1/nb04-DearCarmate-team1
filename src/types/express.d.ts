@@ -11,6 +11,8 @@ declare global {
     }
     interface Request {
       user?: UserPayload;
+    interface Request {
+      user: User & { isAdmin: boolean };
     }
   }
 }

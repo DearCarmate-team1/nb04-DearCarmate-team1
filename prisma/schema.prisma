@@ -23,6 +23,7 @@ model Company {
   // cars  Car[]
   User User[]
   customer Customer[]
+
   @@map("companies")
 }
 
