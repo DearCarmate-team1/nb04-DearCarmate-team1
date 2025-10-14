@@ -6,7 +6,7 @@ import User from './user.ts';
 declare global {
   namespace Express {
     interface Request {
-      user: User & { isAdmin: boolean };
+      user: User & { isAdmin: boolean; companyId: number };
     }
   }
 }
