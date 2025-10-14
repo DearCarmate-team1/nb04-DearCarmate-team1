@@ -22,7 +22,7 @@ model Company {
 
   // cars  Car[]
   User User[]
-
+  customer Customer[]
   @@map("companies")
 }
 
@@ -42,23 +42,25 @@ model User {
   companyId Int     @map("company_id")
 
   @@map("users")
-  Customers Customer[]
 }
 
 model Customer {
-id Int @id @default(autoincrement())
-name String
-gender String 
-phone String
-ageGroup String? 
-region String? 
-email String? @unique
-memo String?
-contractCount Int @default(0) 
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(50)
+  gender      String    @db.VarChar(10)
+  phoneNumber String    @map("phone_number") @db.VarChar(20)
+  ageGroup    String?   @map("age_group") @db.VarChar(20)
+  region      String?   @db.VarChar(50)
+  email       String?   @db.VarChar(100)
+  memo        String?   @db.Text
+  contractCount Int     @default(0) @map("contract_count") // 계약 횟수
 
-companyId Int
-company User @relation(fields: [companyId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId Int     @map("company_id")
+
+  @@map("customers")
 }
+
