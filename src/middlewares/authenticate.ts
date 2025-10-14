@@ -43,10 +43,6 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       return next(new NotFoundError('사용자를 찾을 수 없습니다.'));
     }
 
-    if (!user.isAdmin) {
-      return next(new UnauthorizedError('관리자 권한이 필요합니다.'));
-    }
-
     req.user = user;
 
     next();

@@ -7,6 +7,7 @@ import {
   UserWithCompanyResponseDto,
 } from '../dtos/company-dto.js';
 import companyRepository from '../repositories/company-repository.js';
+import prisma from '../configs/prisma-client.js';
 
 const companyService = {
   // 회사 등록
@@ -17,9 +18,13 @@ const companyService = {
 
   // 회사 목록 조회
   async getAll(query: GetCompaniesDto) {
-    const { page = 1, pageSize = 10 } = query;
+    const page = Number(query.page) || 1;
+    const pageSize = Number(query.pageSize) || 10;
+    const numericQuery = { ...query, page, pageSize };
 
-    const { companies, total } = await companyRepository.getAll(query);
+    const { companies, total } = await prisma.$transaction(async (tx) => {
+      return companyRepository.getAll(numericQuery, tx);
+    });
 
     // API 명세에 맞게 데이터 가공
     const mappedData: CompanyResponseDto[] = companies.map((company) => ({
@@ -42,9 +47,14 @@ const companyService = {
 
   // 회사별 유저 조회
   async getUsersByCompany(query: GetUsersByCompanyDto) {
-    const { users, total } = await companyRepository.getUsersByCompany(query);
 
-    const { page = 1, pageSize = 10 } = query;
+    const page = Number(query.page) || 1;
+    const pageSize = Number(query.pageSize) || 10;
+    const numericQuery = { ...query, page, pageSize };
+
+    const { users, total } = await prisma.$transaction(async (tx) => {
+      return companyRepository.getUsersByCompany(numericQuery, tx);
+    });
 
     const mappedData: UserWithCompanyResponseDto[] = users.map((user) => ({
       id: user.id,
@@ -76,6 +86,7 @@ const companyService = {
   async delete(companyId: number) {
     await companyRepository.delete(companyId);
   },
+
 };
 
 export default companyService;
