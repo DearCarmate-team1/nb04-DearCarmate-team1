@@ -30,6 +30,9 @@ router.get(
   asyncHandler(carController.getAll),
 );
 
+// 🚘 제조사/모델 목록 (통합) - /:carId보다 먼저 정의
+router.get('/models', authenticate, asyncHandler(carController.getModels));
+
 // 🔍 차량 상세
 router.get(
   '/:carId',
@@ -53,9 +56,6 @@ router.delete(
   validate(carIdParamSchema, 'params'),
   asyncHandler(carController.delete),
 );
-
-// 🚘 제조사/모델 목록 (통합)
-router.get('/models', authenticate, asyncHandler(carController.getModels));
 
 router.post(
   '/upload',

@@ -29,7 +29,12 @@ const makeStorage = (subDir: string) => {
 
 // ✅ CSV 파일 전용 필터
 const csvFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
-  if (file.mimetype !== 'text/csv') {
+  // CSV 파일 확장자 또는 MIME 타입 체크
+  const allowedMimes = ['text/csv', 'application/csv', 'text/plain'];
+  const allowedExtensions = ['.csv'];
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+
+  if (!allowedMimes.includes(file.mimetype) && !allowedExtensions.includes(fileExtension)) {
     return cb(new Error('CSV 파일만 업로드할 수 있습니다.'));
   }
   cb(null, true);

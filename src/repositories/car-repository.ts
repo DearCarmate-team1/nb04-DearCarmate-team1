@@ -1,8 +1,9 @@
 import prisma from '../configs/prisma-client.js';
 import { CarStatus } from '@prisma/client';
+import type { CarCreateInput, CarUpdateInput } from '../types/car.js';
 
 const carRepository = {
-  async create(data: any) {
+  async create(data: CarCreateInput) {
     return prisma.car.create({ data, include: { model: true } });
   },
 
@@ -42,7 +43,7 @@ const carRepository = {
     return prisma.car.findUnique({ where: { id }, include: { model: true } });
   },
 
-  async update(id: number, data: any) {
+  async update(id: number, data: CarUpdateInput & { modelId?: number }) {
     return prisma.car.update({ where: { id }, data, include: { model: true } });
   },
 
@@ -50,7 +51,7 @@ const carRepository = {
     await prisma.car.delete({ where: { id } });
   },
 
-  async createMany(data: any[]) {
+  async createMany(data: CarCreateInput[]): Promise<void> {
     if (!data.length) return;
     await prisma.car.createMany({
       data,

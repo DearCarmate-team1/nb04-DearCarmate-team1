@@ -1,9 +1,19 @@
-import type { CarEntity, CarModelEntity, CarStatus } from '../types/car.js';
+import type {
+  CarEntity,
+  CarModelEntity,
+  CarStatus,
+  CarResponseModel,
+  CarListResponse,
+  CarCreateInput,
+  CarUpdateInput,
+} from '../types/car.js';
 import type { Car, CarModel } from '@prisma/client';
+import type { CreateCarDto, UpdateCarDto } from '../dtos/car-dto.js';
 
 /** -------------------------------------------------
  * 🧩 Car Mapper
- * - Prisma ↔ Domain 변환
+ * - Prisma ↔ Domain ↔ Response 변환
+ * - 사이드 이펙트 차단, 타입 안전성 보장
  * ------------------------------------------------- */
 export const CarMapper = {
   /** 🚗 Car + Model join → CarEntity 변환 */
@@ -36,5 +46,73 @@ export const CarMapper = {
       model: model.model,
       type: model.type,
     };
+  },
+
+  /** 🚗 CarEntity → CarResponseModel 변환 (Controller 출력용) */
+  toResponseModel(entity: CarEntity): CarResponseModel {
+    return {
+      id: entity.id,
+      carNumber: entity.carNumber,
+      manufacturer: entity.manufacturer,
+      model: entity.model,
+      type: entity.type,
+      manufacturingYear: entity.manufacturingYear,
+      mileage: entity.mileage,
+      price: entity.price,
+      accidentCount: entity.accidentCount,
+      explanation: entity.explanation ?? '',
+      accidentDetails: entity.accidentDetails ?? '',
+      status: entity.status,
+    };
+  },
+
+  /** 📋 CarEntity[] → CarListResponse 변환 */
+  toListResponse(
+    entities: CarEntity[],
+    currentPage: number,
+    totalPages: number,
+    totalItemCount: number,
+  ): CarListResponse {
+    return {
+      currentPage,
+      totalPages,
+      totalItemCount,
+      data: entities.map((entity) => this.toResponseModel(entity)),
+    };
+  },
+
+  /** 🚗 CreateCarDto → CarCreateInput 변환 (Service 입력용) */
+  fromCreateDto(dto: CreateCarDto, companyId: number, modelId: number): CarCreateInput {
+    const result: CarCreateInput = {
+      carNumber: dto.carNumber,
+      manufacturingYear: dto.manufacturingYear,
+      mileage: dto.mileage,
+      price: dto.price,
+      accidentCount: dto.accidentCount,
+      companyId,
+      modelId,
+      status: 'possession', // 기본값
+    };
+
+    if (dto.explanation !== undefined) result.explanation = dto.explanation;
+    if (dto.accidentDetails !== undefined) result.accidentDetails = dto.accidentDetails;
+
+    return result;
+  },
+
+  /** 🚙 UpdateCarDto → CarUpdateInput 변환 (Service 입력용) */
+  fromUpdateDto(dto: UpdateCarDto): CarUpdateInput {
+    const result: CarUpdateInput = {};
+
+    if (dto.carNumber !== undefined) result.carNumber = dto.carNumber;
+    if (dto.manufacturingYear !== undefined) result.manufacturingYear = dto.manufacturingYear;
+    if (dto.mileage !== undefined) result.mileage = dto.mileage;
+    if (dto.price !== undefined) result.price = dto.price;
+    if (dto.accidentCount !== undefined) result.accidentCount = dto.accidentCount;
+    if (dto.explanation !== undefined) result.explanation = dto.explanation;
+    if (dto.accidentDetails !== undefined) result.accidentDetails = dto.accidentDetails;
+    if (dto.status !== undefined) result.status = dto.status;
+
+    return result;
   },
 };
