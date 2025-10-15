@@ -110,7 +110,7 @@ model CarModel {
 
 model Contract {
   id             Int            @id @default(autoincrement())
-  status         ContractStatus @default(PENDING)
+  status         ContractStatus @default("carInspection")
   contractPrice  Int            @map("contract_price")
   resolutionDate DateTime?      @map("resolution_date")
   createdAt      DateTime       @default(now()) @map("created_at")
@@ -187,8 +187,9 @@ enum CarStatus {
 }
 
 enum ContractStatus {
-  PENDING // 계약 대기
-  ACTIVE // 계약 진행중
-  COMPLETED // 계약 완료
-  CANCELLED // 계약 취소
+  carInspection // 차량 확인
+  priceNegotiation // 가격 협의
+  contractDraft // 계약서 작성 중
+  contractSuccessful // 계약 완료  
+  contractFailed // 계약 취소
 }
