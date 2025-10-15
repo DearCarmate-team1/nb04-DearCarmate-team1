@@ -36,6 +36,13 @@ const userRepository = {
     });
   },
 
+  async updateRefreshToken(id: number, hashedRefreshToken: string | null) {
+    await prisma.user.update({
+      where: { id },
+      data: { currentHashedRefreshToken: hashedRefreshToken },
+    });
+  },
+
   async delete(id: number) {
     return prisma.user.delete({
       where: { id },
