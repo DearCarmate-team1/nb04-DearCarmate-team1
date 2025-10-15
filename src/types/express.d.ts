@@ -1,5 +1,7 @@
 import Express from 'express';
 import type { Request, Response } from 'express';
+import type { Multer } from 'multer';
+import type { File as MulterFile } from 'multer';
 import User from './user.ts';
 
 // 기존 Express 네임스페이스 확장 (Request 인터페이스에 user 속성 추가)
@@ -7,6 +9,8 @@ declare global {
   namespace Express {
     interface Request {
       user: User & { isAdmin: boolean; companyId: number };
+      file?: MulterFile;
+      files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
     }
   }
 }
