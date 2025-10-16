@@ -38,6 +38,7 @@ model User {
   isAdmin        Boolean  @default(false) @map("is_admin")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
+  currentHashedRefreshToken String?  @map("current_hashed_refresh_token")
 
   company   Company @relation(fields: [companyId], references: [id])
   companyId Int     @map("company_id")

@@ -18,7 +18,7 @@ const userService = {
 
     // 3. 회사 정보 검증
     const company = await companyRepository.findByNameAndAuthCode(
-      userData.company,
+      userData.companyName,
       userData.companyCode
     );
     if (!company) {
