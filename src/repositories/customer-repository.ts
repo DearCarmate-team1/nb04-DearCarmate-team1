@@ -1,0 +1,66 @@
+// src/repositories/customer-repository.ts
+import { PrismaClient, Prisma } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export class CustomerRepository {
+  async create(companyId: number, data: any) {
+    return prisma.customer.create({
+      data: { ...data, companyId },
+    });
+  }
+  // 고객 목록 조회 (검색 + 페이지네이션)
+  async findMany(
+  companyId: number,
+  searchBy: string,
+  keyword: string,
+  skip: number,
+  take: number
+) {
+  const where: any = { companyId };
+
+  if (keyword) {
+    // 검색 기준 필드에 따라 동적으로 검색 조건 생성
+    where[searchBy] = { contains: keyword };
+  }
+
+  const [customers, total] = await Promise.all([
+    prisma.customer.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.customer.count({ where }),
+  ]);
+
+  return { customers, total };
+}
+
+  // 고객 상세 조회
+  async findById(companyId: number, customerId: number) {
+    return prisma.customer.findFirst({
+      where: { id: customerId, companyId },
+    });
+  }
+  // 고객 정보 수정
+  async update(customerId: number, data: any) {
+    return prisma.customer.update({
+      where: { id: customerId },
+      data,
+    });
+  }
+  // 고객 삭제
+  async delete(customerId: number) {
+    return prisma.customer.delete({
+      where: { id: customerId },
+    });
+  }
+  // 고객 대량 등록
+  async bulkInsert(customers: any[]) {
+    return prisma.customer.createMany({
+      data: customers,
+      skipDuplicates: true,
+    });
+  }
+}
