@@ -10,6 +10,7 @@ import authRoute from './routes/auth-route.js';
 import imageRoute from './routes/image-route.js';
 import { errorHandler } from './middlewares/error-handler.js';
 import customerRoutes from './routes/customerRoutes';
+import carRoute from './routes/car-route.js';
 
 const app = express();
 const port = 3001;
@@ -30,7 +31,7 @@ app.use('/users', userRoute);
 app.use('/auth', authRoute);
 app.use('/images', imageRoute);
 app.use('/customers', customerRoutes);
-
+app.use('/cars', carRoute);
 // 에러 핸들러 미들웨어는 가장 마지막에 등록
 app.use(errorHandler);
 
