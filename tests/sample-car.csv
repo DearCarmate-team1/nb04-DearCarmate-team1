@@ -1,0 +1,4 @@
+carNumber,manufacturer,model,manufacturingYear,mileage,price,accidentCount,explanation,accidentDetails
+"12가3456","기아","K5","2020","35000","22000000","0","무사고 차량, 실내 청결",""
+"23나6789","현대","아반떼","2021","18000","19000000","1","경미한 접촉사고 수리 완료","앞범퍼 교체"
+"45다9876","BMW","320i","2019","55000","33000000","0","정비 이력 완벽, 실주행 차량",""
