@@ -9,7 +9,7 @@ import userRoute from './routes/user-route.js';
 import authRoute from './routes/auth-route.js';
 import imageRoute from './routes/image-route.js';
 import { errorHandler } from './middlewares/error-handler.js';
-import customerRoutes from './routes/customerRoutes';
+import customerRoutes from './routes/customer-routes.js';
 import carRoute from './routes/car-route.js';
 import contractRouter from './routes/contract-route.js';
 
