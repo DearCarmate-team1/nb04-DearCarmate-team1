@@ -23,6 +23,7 @@ model Company {
   cars     Car[]
   User     User[]
   Customer Customer[]
+  contract Contract[]
 
   @@map("companies")
 }
@@ -42,6 +43,8 @@ model User {
 
   company   Company @relation(fields: [companyId], references: [id])
   companyId Int     @map("company_id")
+
+  contract Contract[]
 
   @@map("users")
 }
@@ -63,6 +66,8 @@ model Customer {
   company   Company @relation(fields: [companyId], references: [id])
   companyId Int     @map("company_id")
 
+  contract Contract[]
+
   @@map("customers")
 }
 
@@ -81,9 +86,9 @@ model Car {
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  model   CarModel @relation(fields: [modelId], references: [id])
-  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  // contracts Contract[]
+  model     CarModel   @relation(fields: [modelId], references: [id])
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contracts Contract[]
 
   @@index([companyId])
   @@index([modelId])
@@ -104,6 +109,70 @@ model CarModel {
   @@map("car_models")
 }
 
+model Contract {
+  id             Int            @id @default(autoincrement())
+  status         ContractStatus @default(carInspection)
+  contractPrice  Int            @map("contract_price")
+  resolutionDate DateTime?      @map("resolution_date")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  car   Car @relation(fields: [carId], references: [id])
+  carId Int @map("car_id")
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @map("user_id")
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int      @map("customer_id")
+
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId Int     @map("company_id")
+
+  documents ContractDocument[]
+  meetings  Meeting[]
+
+  @@map("contracts")
+}
+
+model ContractDocument {
+  id       Int    @id @default(autoincrement())
+  fileName String @map("file_name") @db.VarChar(255)
+  fileKey  String @unique @map("file_key") @db.VarChar(255)
+  mimeType String @map("mime_type") @db.VarChar(100)
+  size     Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  contract   Contract @relation(fields: [contractId], references: [id])
+  contractId Int      @map("contract_id")
+
+  @@map("contract_documents")
+}
+
+model Meeting {
+  id   Int      @id @default(autoincrement())
+  date DateTime
+
+  contract   Contract @relation(fields: [contractId], references: [id])
+  contractId Int      @map("contract_id")
+
+  notifications Notification[]
+
+  @@map("meetings")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  alarmTime DateTime @map("alarm_time")
+
+  meeting   Meeting @relation(fields: [meetingId], references: [id])
+  meetingId Int     @map("meeting_id")
+
+  @@map("notifications")
+}
+
 enum CarType {
   SEDAN
   SUV
@@ -116,4 +185,12 @@ enum CarStatus {
   possession // 보유 중
   contractProceeding // 계약 진행 중
   contractCompleted // 계약 완료
+}
+
+enum ContractStatus {
+  carInspection // 차량 확인
+  priceNegotiation // 가격 협의
+  contractDraft // 계약서 작성 중
+  contractSuccessful // 계약 완료  
+  contractFailed // 계약 취소
 }
