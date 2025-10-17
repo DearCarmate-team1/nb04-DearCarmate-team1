@@ -1,15 +1,3 @@
-/** -------------------------------------------------
- * 🚗 Car Domain Types
- * - Domain 중심 타입 정의 (Prisma 비의존)
- * ------------------------------------------------- */
-
-/** 🚗 차량 상태 ENUM */
-export type CarStatus = 'possession' | 'contractProceeding' | 'contractCompleted';
-
-/** -------------------------------------------------
- * 🧩 Domain Entity (DB 조회 결과 / 내부 로직)
- * ------------------------------------------------- */
-
 /** 🚗 차량 엔티티 */
 export interface CarEntity {
   id: number;
@@ -23,7 +11,7 @@ export interface CarEntity {
   accidentCount: number;
   explanation?: string;
   accidentDetails?: string;
-  status: CarStatus;
+  status: 'possession' | 'contractProceeding' | 'contractCompleted';
   companyId: number;
   modelId: number;
   createdAt: Date;
@@ -72,7 +60,7 @@ export interface CarCreateInput {
   accidentDetails?: string;
   companyId: number;
   modelId: number;
-  status?: CarStatus;
+  status?: 'possession' | 'contractProceeding' | 'contractCompleted';
 }
 
 /** 🚙 차량 수정 입력 타입 */
@@ -84,7 +72,7 @@ export interface CarUpdateInput {
   accidentCount?: number;
   explanation?: string;
   accidentDetails?: string;
-  status?: CarStatus;
+  status?: 'possession' | 'contractProceeding' | 'contractCompleted';
   modelId?: number;
 }
 
@@ -92,21 +80,14 @@ export interface CarUpdateInput {
  * 📤 Response Models (Controller → Client)
  * ------------------------------------------------- */
 
-/** 🚗 단일 차량 응답 모델 */
-export interface CarResponseModel {
-  id: number;
-  carNumber: string;
-  manufacturer: string;
-  model: string;
-  type: string;
-  manufacturingYear: number;
-  mileage: number;
-  price: number;
-  accidentCount: number;
-  explanation: string;
-  accidentDetails: string;
-  status: CarStatus;
-}
+/** 🚗 단일 차량 응답 모델 (CarEntity 기반, 내부 필드 제외) */
+export type CarResponseModel = Omit<
+  CarEntity,
+  'companyId' | 'modelId' | 'createdAt' | 'updatedAt'
+> & {
+  explanation: string; // CarEntity는 optional이지만 응답에서는 빈 문자열로 보장
+  accidentDetails: string; // 동일
+};
 
 /** 📋 차량 목록 응답용 */
 export interface CarListResponse {
@@ -114,4 +95,15 @@ export interface CarListResponse {
   totalPages: number;
   totalItemCount: number;
   data: CarResponseModel[];
+}
+
+/** 🚚 대용량 업로드 결과 */
+export interface BulkUploadResult {
+  successCount: number;
+  failureCount: number;
+  failures: Array<{
+    row: number;
+    carNumber: string;
+    reason: string;
+  }>;
 }

@@ -1,14 +1,13 @@
 import type {
   CarEntity,
   CarModelEntity,
-  CarStatus,
   CarResponseModel,
   CarListResponse,
   CarCreateInput,
   CarUpdateInput,
 } from '../types/car.js';
 import type { Car, CarModel } from '@prisma/client';
-import type { CreateCarDto, UpdateCarDto } from '../dtos/car-dto.js';
+import type { CreateCarDto, UpdateCarDto, CarStatus } from '../dtos/car-dto.js';
 
 /** -------------------------------------------------
  * 🧩 Car Mapper
@@ -50,19 +49,11 @@ export const CarMapper = {
 
   /** 🚗 CarEntity → CarResponseModel 변환 (Controller 출력용) */
   toResponseModel(entity: CarEntity): CarResponseModel {
+    const { companyId, modelId, createdAt, updatedAt, ...rest } = entity;
     return {
-      id: entity.id,
-      carNumber: entity.carNumber,
-      manufacturer: entity.manufacturer,
-      model: entity.model,
-      type: entity.type,
-      manufacturingYear: entity.manufacturingYear,
-      mileage: entity.mileage,
-      price: entity.price,
-      accidentCount: entity.accidentCount,
+      ...rest,
       explanation: entity.explanation ?? '',
       accidentDetails: entity.accidentDetails ?? '',
-      status: entity.status,
     };
   },
 
