@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authenticate.js';
 import { validate } from '../middlewares/validate.js';
-import { uploadCarCsv } from '../configs/multer.js';
+import { uploadCsv } from '../configs/multer.js';
 import asyncHandler from '../configs/async-handler.js';
 import carController from '../controllers/car-controller.js';
 
@@ -57,10 +57,11 @@ router.delete(
   asyncHandler(carController.delete),
 );
 
+// 📤 차량 CSV 대용량 업로드 (메모리 기반 - 디스크 저장 안 함)
 router.post(
   '/upload',
   authenticate,
-  uploadCarCsv.single('file'),
+  uploadCsv.single('file'),
   asyncHandler(carController.uploadCsv),
 );
 

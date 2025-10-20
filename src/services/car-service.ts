@@ -1,16 +1,32 @@
 import carRepository from '../repositories/car-repository.js';
 import carModelRepository from '../repositories/car-model-repository.js';
-import { BadRequestError, ForbiddenError, NotFoundError } from '../configs/custom-error.js';
-import type { CreateCarDto, UpdateCarDto } from '../dtos/car-dto.js';
-import type { CarCsvRow, CarResponseModel, CarListResponse, CarCreateInput } from '../types/car.js';
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from '../configs/custom-error.js';
+import type { CreateCarDto, UpdateCarDto, CarQueryDto } from '../dtos/car-dto.js';
+import type {
+  CarResponseModel,
+  CarListResponse,
+  CarCreateInput,
+  BulkUploadResult,
+  CarCsvRow,
+} from '../types/car.js';
 import { CarMapper } from '../mappers/car-mapper.js';
-import { parse } from 'csv-parse/sync';
-import fs from 'fs';
+import { csvParser } from '../utils/csv-parser.js';
 
 const carService = {
   // 🚗 차량 등록
   async create(user: any, dto: CreateCarDto): Promise<CarResponseModel> {
-    const { manufacturer, model } = dto;
+    const { manufacturer, model, carNumber } = dto;
+
+    // ✅ 중복 차량 번호 검사
+    const existingCar = await carRepository.findByCarNumber(carNumber);
+    if (existingCar) {
+      throw new ConflictError(`차량 번호 "${carNumber}"는 이미 등록되어 있습니다.`);
+    }
 
     const foundModel = await carModelRepository.findByManuModel(manufacturer, model);
     if (!foundModel) throw new BadRequestError('존재하지 않는 제조사/차종입니다.');
@@ -23,18 +39,15 @@ const carService = {
   },
 
   // 📋 차량 목록
-  async list(user: any, query: any): Promise<CarListResponse> {
-    const page = Number(query.page) || 1;
-    const pageSize = Number(query.pageSize) || 10;
-    const { status, searchBy, keyword } = query;
+  async list(user: any, query: CarQueryDto): Promise<CarListResponse> {
+    const { page, pageSize, status, searchBy, keyword } = query;
 
     const { totalItemCount, data } = await carRepository.findPaged({
       companyId: user.companyId,
       page,
       pageSize,
-      status,
-      searchBy,
-      keyword,
+      ...(status && { status }),
+      ...(searchBy && keyword && { searchBy, keyword }),
     });
 
     const entities = data.map((car) => CarMapper.fromPrisma(car));
@@ -58,6 +71,13 @@ const carService = {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
     if (car.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
+
+    if (dto.carNumber && dto.carNumber !== car.carNumber) {
+      const existingCar = await carRepository.findByCarNumber(dto.carNumber);
+      if (existingCar) {
+        throw new ConflictError(`차량 번호 "${dto.carNumber}"는 이미 등록되어 있습니다.`);
+      }
+    }
 
     let modelId = car.modelId;
     if (dto.manufacturer || dto.model) {
@@ -99,28 +119,64 @@ const carService = {
     }));
   },
 
-  /** 🚚 대용량 CSV 업로드 */
-  async bulkUpload(user: any, filePath: string): Promise<{ count: number }> {
-    // CSV 파일 읽기 + BOM 제거
-    const csvText = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+  /** 🚚 대용량 CSV 업로드 (메모리 기반 - 디스크 저장 안 함) */
+  async bulkUpload(user: any, file: Express.Multer.File | undefined): Promise<BulkUploadResult> {
+    // Step 1: 파일 검증
+    if (!file) {
+      throw new BadRequestError('CSV 파일이 필요합니다.');
+    }
 
-    // ✅ 타입 안전한 CSV 파싱
-    const records = parse<CarCsvRow>(csvText, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
-    });
+    // Step 2: CSV 파일 파싱 (메모리 버퍼에서 바로 파싱, 비동기)
+    const records = await csvParser.parseFromBuffer<CarCsvRow>(file.buffer);
 
     if (!records.length) {
       throw new BadRequestError('CSV 데이터가 비어 있습니다.');
     }
 
-    const cars: CarCreateInput[] = [];
+    // Step 3: N+1 쿼리 해결 - 사전 캐싱
+    // ✅ 모든 CarModel을 한 번에 조회
+    const allCarModels = await carModelRepository.findAllWithId();
+    const carModelMap = new Map<string, number>();
+    allCarModels.forEach((cm) => {
+      const key = `${cm.manufacturer}|${cm.model}`;
+      carModelMap.set(key, cm.id);
+    });
 
-    for (const r of records) {
-      const carModel = await carModelRepository.findByManuModel(r.manufacturer, r.model);
-      if (!carModel) continue; // 잘못된 제조사/모델은 건너뜀
+    // ✅ 기존 차량 번호도 한 번에 조회
+    const existingCarNumbers = await carRepository.findAllCarNumbersByCompany(user.companyId);
+    const carNumberSet = new Set(existingCarNumbers);
 
+    // Step 4: 비즈니스 검증 (메모리 기반, DB 쿼리 없음)
+    const validCars: CarCreateInput[] = [];
+    const failures: BulkUploadResult['failures'] = [];
+
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i]!;
+      const rowNumber = i + 2; // CSV 행 번호 (헤더 포함)
+
+      // 검증 1: 제조사/모델 존재 여부
+      const key = `${r.manufacturer}|${r.model}`;
+      const modelId = carModelMap.get(key);
+      if (!modelId) {
+        failures.push({
+          row: rowNumber,
+          carNumber: r.carNumber,
+          reason: `존재하지 않는 제조사/모델: ${r.manufacturer} ${r.model}`,
+        });
+        continue;
+      }
+
+      // 검증 2: 중복 차량 번호
+      if (carNumberSet.has(r.carNumber)) {
+        failures.push({
+          row: rowNumber,
+          carNumber: r.carNumber,
+          reason: '이미 등록된 차량 번호입니다.',
+        });
+        continue;
+      }
+
+      // ✅ 검증 통과: validCars에 추가
       const item: CarCreateInput = {
         carNumber: r.carNumber,
         manufacturingYear: Number(r.manufacturingYear),
@@ -128,21 +184,28 @@ const carService = {
         price: Number(r.price),
         accidentCount: Number(r.accidentCount),
         companyId: user.companyId,
-        modelId: carModel.id,
+        modelId,
       };
 
       if (r.explanation !== undefined) item.explanation = r.explanation;
       if (r.accidentDetails !== undefined) item.accidentDetails = r.accidentDetails;
 
-      cars.push(item);
+      validCars.push(item);
+      // 중복 방지: 현재 배치에 추가된 차량 번호도 Set에 추가
+      carNumberSet.add(r.carNumber);
     }
 
-    if (!cars.length) {
-      throw new BadRequestError('등록 가능한 차량 데이터가 없습니다.');
+    // Step 5: 검증 통과한 항목만 일괄 등록 (Repository 위임)
+    if (validCars.length > 0) {
+      await carRepository.bulkCreate(validCars);
     }
 
-    await carRepository.createMany(cars);
-    return { count: cars.length };
+    // Step 6: 결과 반환
+    return {
+      successCount: validCars.length,
+      failureCount: failures.length,
+      failures,
+    };
   },
 };
 

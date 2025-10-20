@@ -1,0 +1,18 @@
+# 의존성
+node_modules
+
+# 빌드 결과물
+dist
+build
+coverage
+
+# TypeScript 빌드 정보
+*.tsbuildinfo
+
+# 환경 변수
+.env
+.env.*
+
+# 로그 파일
+*.log
+logs

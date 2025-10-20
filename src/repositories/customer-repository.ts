@@ -1,8 +1,4 @@
-// src/repositories/customer-repository.ts
-import { PrismaClient, Prisma } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
+import prisma from '../configs/prisma-client.js';
 export class CustomerRepository {
   async create(companyId: number, data: any) {
     return prisma.customer.create({
@@ -10,32 +6,26 @@ export class CustomerRepository {
     });
   }
   // 고객 목록 조회 (검색 + 페이지네이션)
-  async findMany(
-  companyId: number,
-  searchBy: string,
-  keyword: string,
-  skip: number,
-  take: number
-) {
-  const where: any = { companyId };
+  async findMany(companyId: number, searchBy: string, keyword: string, skip: number, take: number) {
+    const where: any = { companyId };
 
-  if (keyword) {
-    // 검색 기준 필드에 따라 동적으로 검색 조건 생성
-    where[searchBy] = { contains: keyword };
+    if (keyword) {
+      // 검색 기준 필드에 따라 동적으로 검색 조건 생성
+      where[searchBy] = { contains: keyword };
+    }
+
+    const [customers, total] = await Promise.all([
+      prisma.customer.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.customer.count({ where }),
+    ]);
+
+    return { customers, total };
   }
-
-  const [customers, total] = await Promise.all([
-    prisma.customer.findMany({
-      where,
-      skip,
-      take,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.customer.count({ where }),
-  ]);
-
-  return { customers, total };
-}
 
   // 고객 상세 조회
   async findById(companyId: number, customerId: number) {
@@ -62,5 +52,14 @@ export class CustomerRepository {
       data: customers,
       skipDuplicates: true,
     });
+  }
+
+  // 특정 회사의 모든 전화번호 조회 (중복 체크용)
+  async findAllPhoneNumbersByCompany(companyId: number): Promise<string[]> {
+    const customers = await prisma.customer.findMany({
+      where: { companyId },
+      select: { phoneNumber: true },
+    });
+    return customers.map((c) => c.phoneNumber);
   }
 }

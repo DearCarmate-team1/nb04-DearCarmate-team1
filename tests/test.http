@@ -1,0 +1,13 @@
+POST http://localhost:3001/users
+Content-Type: application/json
+
+{
+	"name": "시스템관리자",
+	"email": "admin@dearcarmate.com",
+	"employeeNumber": "00001",
+	"phoneNumber": "010-0000-0000",
+	"password": "admin1234",
+	"passwordConfirmation": "admin1234",
+	"companyName": "시스템관리",
+	"companyCode": "ADMIN"
+}
