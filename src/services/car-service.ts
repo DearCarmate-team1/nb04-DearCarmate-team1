@@ -12,6 +12,7 @@ import type {
   CarListResponse,
   CarCreateInput,
   BulkUploadResult,
+  CarCsvRow,
 } from '../types/car.js';
 import { CarMapper } from '../mappers/car-mapper.js';
 import { csvParser } from '../utils/csv-parser.js';
@@ -118,15 +119,15 @@ const carService = {
     }));
   },
 
-  /** 🚚 대용량 CSV 업로드 (개선: N+1 해결 + 트랜잭션 + 상세 리포트) */
-  async bulkUpload(user: any, filePath: string | undefined): Promise<BulkUploadResult> {
-    // Step 1: 파일 경로 검증
-    if (!filePath) {
+  /** 🚚 대용량 CSV 업로드 (메모리 기반 - 디스크 저장 안 함) */
+  async bulkUpload(user: any, file: Express.Multer.File | undefined): Promise<BulkUploadResult> {
+    // Step 1: 파일 검증
+    if (!file) {
       throw new BadRequestError('CSV 파일이 필요합니다.');
     }
 
-    // Step 2: CSV 파일 파싱 (유틸리티 위임)
-    const records = csvParser.parseCars(filePath);
+    // Step 2: CSV 파일 파싱 (메모리 버퍼에서 바로 파싱, 비동기)
+    const records = await csvParser.parseFromBuffer<CarCsvRow>(file.buffer);
 
     if (!records.length) {
       throw new BadRequestError('CSV 데이터가 비어 있습니다.');

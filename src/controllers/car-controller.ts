@@ -47,9 +47,9 @@ const carController = {
     res.status(200).json({ data: result });
   },
 
-  /** 🚚 차량 CSV 대용량 업로드 */
+  /** 🚚 차량 CSV 대용량 업로드 (메모리 기반 - 디스크 저장 안 함) */
   async uploadCsv(req: Request, res: Response): Promise<void> {
-    const result = await carService.bulkUpload(req.user, req.file?.path);
+    const result = await carService.bulkUpload(req.user, req.file);
 
     // ✅ 실패 내역이 있으면 207 Multi-Status 반환
     if (result.failureCount > 0) {

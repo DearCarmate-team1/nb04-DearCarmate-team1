@@ -1,77 +1,96 @@
 import type { Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
-import {
-  AppError,
-  BadRequestError,
-  ConflictError,
-  ForbiddenError,
-  InternalServerError,
-  NotFoundError,
-  UnauthorizedError,
-} from '../configs/custom-error.js'; // 앞서 정의하신 AppError 추상 클래스 + 상속 에러들
+import { AppError, BadRequestError } from '../configs/custom-error.js';
+import { NODE_ENV } from '../configs/constants.js';
 
 export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction) {
+  // ===========================
+  // 🧾 에러 로깅
+  // ===========================
   console.error('===== Global Error Handler =====');
+  console.error('Error Name:', err.name);
+  console.error('Error Message:', err.message);
+  console.error('Request:', {
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    userAgent: req.get('user-agent'),
+  });
 
-  // ✅ Zod 에러
+  if (NODE_ENV === 'development') {
+    console.error('Stack Trace:', err.stack);
+  }
+
+  // ===========================
+  // ✅ Zod 유효성 검증 에러
+  // ===========================
   if (err instanceof ZodError) {
-    console.error('Zod validation error:', err.issues);
     const errorDetails = err.issues.map((issue) => ({
       field: issue.path.join('.'),
       message: issue.message,
     }));
-    const badRequestError = new BadRequestError('유효성 검증에 실패했습니다.', errorDetails);
-    return res.status(badRequestError.statusCode).json({
-      message: badRequestError.message,
-      details: badRequestError.details,
+
+    const validationError = new BadRequestError('유효성 검증에 실패했습니다.', errorDetails);
+
+    return res.status(validationError.statusCode).json({
+      message: validationError.message,
+      details: validationError.details,
     });
   }
 
+  // ===========================
   // ✅ Prisma 에러
+  // ===========================
   if (err instanceof Prisma.PrismaClientValidationError) {
-    console.error('Prisma Validation Error:', err.message);
-    return res.status(400).json({ message: 'Prisma 쿼리 데이터가 유효하지 않습니다.' });
-  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    console.error('Prisma KnownRequestError:', err.code, err.meta);
+    return res.status(400).json({
+      message: '데이터베이스 쿼리가 유효하지 않습니다.',
+    });
+  }
+
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    console.error('Prisma Error Code:', err.code);
+    console.error('Prisma Meta:', err.meta);
 
     switch (err.code) {
-      case 'P2025':
-        return res.status(404).json({ message: '요청한 데이터를 찾을 수 없습니다.' });
       case 'P2002': {
-        const field = (err.meta?.['target'] as string[])?.[0];
-        const modelName = err.meta?.['modelName'] as string;
-        const msg = modelName.endsWith('Like')
-          ? '이미 좋아요를 눌렀습니다.'
-          : `${field} 필드의 값이 이미 존재합니다.`;
-        return res.status(409).json({ message: msg });
+        const field = (err.meta?.['target'] as string[])?.[0] || '데이터';
+        return res.status(409).json({
+          message: `${field} 값이 이미 존재합니다.`,
+        });
       }
+      case 'P2025':
+        return res.status(404).json({
+          message: '요청한 데이터를 찾을 수 없습니다.',
+        });
       case 'P2003':
-        return res.status(400).json({ message: '연결된 데이터를 찾을 수 없습니다.' });
+        return res.status(400).json({
+          message: '연결된 데이터를 찾을 수 없습니다.',
+        });
+      default:
+        return res.status(500).json({
+          message: '데이터베이스 오류가 발생했습니다.',
+        });
     }
   }
 
+  // ===========================
   // ✅ 비즈니스 로직 에러 (AppError)
+  // ===========================
   if (err instanceof AppError) {
-    console.error('Business Error:', {
-      name: err.name,
-      code: err.statusCode,
-      message: err.message,
-      url: req.originalUrl,
-      method: req.method,
-      headers: req.headers.authorization,
-      query: req.query,
-    });
-
     return res.status(err.statusCode).json({
       message: err.message,
-      details: err.details ?? [],
+      ...(err.details && { details: err.details }),
     });
   }
 
-  // ✅ 잡히지 않은 에러 (Catch-all)
-  console.error('Unhandled Error:', err.stack || err);
+  // ===========================
+  // ✅ 알 수 없는 에러 (Catch-all)
+  // ===========================
+  console.error('Unhandled Error:', err);
+
   return res.status(500).json({
-    message: '서버 내부에서 에러가 발생했습니다.',
+    message: '서버 내부 오류가 발생했습니다.',
+    ...(NODE_ENV === 'development' && { error: err.message, stack: err.stack }),
   });
 }

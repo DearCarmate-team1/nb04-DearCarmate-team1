@@ -1,35 +1,15 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 
-// ✅ 업로드 루트 경로
-const BASE_UPLOAD_DIR = path.resolve('uploads');
+// ========================================
+// 파일 필터 정의
+// ========================================
 
-// ✅ 업로드 폴더 자동 생성
-const ensureDirExists = (dir: string) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-};
-
-// ✅ 공통 스토리지 생성 함수
-const makeStorage = (subDir: string) => {
-  const uploadPath = path.join(BASE_UPLOAD_DIR, subDir);
-  ensureDirExists(uploadPath);
-
-  return multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, uploadPath),
-    filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      const base = path.basename(file.originalname, ext);
-      cb(null, `${base}-${Date.now()}${ext}`);
-    },
-  });
-};
-
-// ✅ CSV 파일 전용 필터
+/**
+ * CSV 파일 전용 필터
+ * - 용도: 차량/고객 대용량 업로드
+ */
 const csvFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
-  // CSV 파일 확장자 또는 MIME 타입 체크
   const allowedMimes = ['text/csv', 'application/csv', 'text/plain'];
   const allowedExtensions = ['.csv'];
   const fileExtension = path.extname(file.originalname).toLowerCase();
@@ -40,32 +20,67 @@ const csvFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   cb(null, true);
 };
 
-// ✅ 이미지 / 계약서 전용 필터
+/**
+ * 이미지 전용 필터 (PNG, JPEG만)
+ * - 용도: 프로필 이미지, 차량 이미지 등
+ */
 const imageFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
-  if (!['image/png', 'image/jpeg', 'application/pdf'].includes(file.mimetype)) {
+  if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.mimetype)) {
+    return cb(new Error('PNG 또는 JPEG 이미지만 업로드할 수 있습니다.'));
+  }
+  cb(null, true);
+};
+
+/**
+ * 문서 필터 (이미지 + PDF)
+ * - 용도: 계약서 문서
+ */
+const documentFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
+  if (!['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'].includes(file.mimetype)) {
     return cb(new Error('이미지 또는 PDF만 업로드할 수 있습니다.'));
   }
   cb(null, true);
 };
 
-// ✅ 차량 CSV 업로드 전용
-export const uploadCarCsv = multer({
-  storage: makeStorage('cars'),
+// ========================================
+// Multer 인스턴스 (모두 메모리 기반)
+// ========================================
+
+/**
+ * CSV 업로드 (메모리 전용)
+ * - 개발/프로덕션: 메모리 → 파싱 → DB 저장
+ * - 디스크 저장 안 함
+ */
+export const uploadCsv = multer({
+  storage: multer.memoryStorage(),
   fileFilter: csvFilter,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
-// ✅ 고객 CSV 업로드 전용
-export const uploadCustomerCsv = multer({
-  storage: makeStorage('customers'),
-  fileFilter: csvFilter,
-});
-
-// ✅ 계약서 / 이미지 업로드 전용
-export const uploadContractDoc = multer({
-  storage: makeStorage('contracts'),
+/**
+ * 이미지 업로드 (메모리 전용)
+ * - 개발: 메모리 → 로컬 저장 (service에서 처리)
+ * - 프로덕션: 메모리 → Cloudinary (service에서 처리)
+ */
+export const uploadImage = multer({
+  storage: multer.memoryStorage(),
   fileFilter: imageFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB 제한
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 1,
+  },
 });
 
-// ✅ 필요 시 파일 타입별 확장 가능
-// export const uploadProfileImage = multer({ storage: makeStorage('profiles'), fileFilter: imageFilter });
+/**
+ * 문서 업로드 (메모리 전용)
+ * - 개발: 메모리 → 로컬 저장 (service에서 처리)
+ * - 프로덕션: 메모리 → Cloudinary (service에서 처리)
+ */
+export const uploadDocument = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: documentFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB
+    files: 1,
+  },
+});

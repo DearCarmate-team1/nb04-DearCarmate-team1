@@ -1,26 +1,64 @@
-import { parse } from 'csv-parse/sync';
+import { parse } from 'csv-parse';
 import fs from 'fs';
-import type { CarCsvRow } from '../types/car.js';
 
 /**
- * CSV 파일 파싱 유틸리티
- * - 파일 시스템 접근과 CSV 파싱 책임 분리
+ * CSV 파싱 유틸리티
+ * - 메모리 버퍼 또는 파일 경로에서 파싱
  * - BOM 제거 처리
+ * - 비동기 파싱으로 논블로킹 처리
  */
 export const csvParser = {
   /**
-   * CSV 파일을 읽고 파싱하여 CarCsvRow 배열 반환
-   * @param filePath - CSV 파일 경로 (검증 완료된 값)
-   * @returns CarCsvRow[]
+   * 메모리 버퍼에서 CSV 파싱 (제네릭, 비동기)
+   * @param buffer - 파일 버퍼
+   * @returns Promise<T[]>
    */
-  parseCars(filePath: string): CarCsvRow[] {
-    // BOM 제거 후 파일 읽기
+  async parseFromBuffer<T>(buffer: Buffer): Promise<T[]> {
+    const csvText = buffer.toString('utf8').replace(/^\uFEFF/, '');
+
+    return new Promise((resolve, reject) => {
+      parse(
+        csvText,
+        {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true,
+        },
+        (error, records: T[]) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(records);
+          }
+        },
+      );
+    });
+  },
+
+  /**
+   * 파일 경로에서 CSV 파싱 (제네릭, 비동기)
+   * @param filePath - CSV 파일 경로
+   * @returns Promise<T[]>
+   */
+  async parseFromFile<T>(filePath: string): Promise<T[]> {
     const csvText = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
 
-    return parse<CarCsvRow>(csvText, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
+    return new Promise((resolve, reject) => {
+      parse(
+        csvText,
+        {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true,
+        },
+        (error, records: T[]) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(records);
+          }
+        },
+      );
     });
   },
 };
