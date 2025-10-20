@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { CarType } from '@prisma/client';
 
 // contractsByCarType, salesByCarType 배열의 각 요소에 대한 스키마
 const carTypeStatSchema = z.object({
-  carType: z.string(),
+  carType: z.nativeEnum(CarType),
   count: z.number(),
 });
 
