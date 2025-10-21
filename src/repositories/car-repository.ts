@@ -58,6 +58,14 @@ const carRepository = {
     await prisma.car.delete({ where: { id } });
   },
 
+  async updateStatus(id: number, status: CarStatus) {
+    return prisma.car.update({
+      where: { id },
+      data: { status },
+      include: { model: true },
+    });
+  },
+
   async createMany(data: CarCreateInput[]): Promise<number> {
     if (!data.length) return 0;
     const result = await prisma.car.createMany({ data });

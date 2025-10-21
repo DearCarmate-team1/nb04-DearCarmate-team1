@@ -156,7 +156,7 @@ model Meeting {
   id   Int      @id @default(autoincrement())
   date DateTime
 
-  contract   Contract @relation(fields: [contractId], references: [id])
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
   contractId Int      @map("contract_id")
 
   notifications Notification[]
@@ -168,7 +168,7 @@ model Notification {
   id        Int      @id @default(autoincrement())
   alarmTime DateTime @map("alarm_time")
 
-  meeting   Meeting @relation(fields: [meetingId], references: [id])
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   meetingId Int     @map("meeting_id")
 
   @@map("notifications")

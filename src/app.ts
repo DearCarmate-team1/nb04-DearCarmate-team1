@@ -13,11 +13,13 @@ import authRoute from './routes/auth-route.js';
 import imageRoute from './routes/image-route.js';
 import customerRoutes from './routes/customer-routes.js';
 import carRoute from './routes/car-route.js';
+import dashboardRoute from './routes/dashboard-route.js';
+import contractRoute from './routes/contract-route.js';
+
 import { PORT, CORS_ORIGINS, NODE_ENV, BASE_URL } from './configs/constants.js';
 import { notFoundHandler } from './middlewares/not-found-handler.js';
 import { errorHandler } from './middlewares/error-handler.js';
-// import contractRouter from './routes/contract-route.js';
-import dashboardRoute from './routes/dashboard-route.js';
+
 
 const app = express();
 const port = Number(PORT) || 3001;
@@ -84,6 +86,8 @@ app.use('/images', imageRoute);
 app.use('/customers', customerRoutes);
 app.use('/cars', carRoute);
 app.use('/dashboard', dashboardRoute);
+app.use('/contracts', contractRoute);
+
 
 // ==========================
 // ❌ 404 핸들러
