@@ -37,35 +37,54 @@ export class ContractDocumentRepository {
     };
   }
 
-  // 임시 계약서(초안) 조회
+  // 문서 등록용 계약 목록 조회 (문서가 없는 계약 성공 건)
   async findDrafts() {
     const contracts = await prisma.contract.findMany({
-      where: { status: "contractDraft" },
+      where: {
+        status: "contractSuccessful", // 계약 성공 건만
+        documents: {
+          none: {}, // 문서가 0건인 계약만
+        },
+      },
       include: {
-        car: { select: { carNumber: true } },
+        car: {
+          select: {
+            carNumber: true,
+            model: {
+              select: {
+                model: true
+              }
+            }
+          }
+        },
         customer: { select: { name: true } },
       },
+      orderBy: { id: 'desc' },
     });
 
-    // data 문자열 생성
+    // data 문자열 생성: 차량 모델 - 고객명
     return contracts.map(c => ({
       id: c.id,
-      data: `${c.car.carNumber} - ${c.customer.name} 고객님`,
+      data: `${c.car.model.model} - ${c.customer.name} 고객님`,
     }));
   }
 
-  // 계약서 파일 저장
-  async saveFile(file: Express.Multer.File, contractId: number) {
-    return await prisma.contractDocument.create({
+  // 계약서 파일 저장 (contractId는 나중에 업데이트됨)
+  async saveFile(file: Express.Multer.File) {
+    // 한글 파일명 디코딩
+    const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+
+    const document = await prisma.contractDocument.create({
       data: {
-        fileName: file.originalname,
+        fileName: originalName,
         fileKey: file.filename,
         filePath: file.path,
         mimeType: file.mimetype,
         size: file.size,
-        contractId, // 필수 relation
+        // contractId는 optional - 나중에 계약 업데이트 시 연결
       },
     });
+    return document.id;
   }
 
   // ID로 계약서 조회

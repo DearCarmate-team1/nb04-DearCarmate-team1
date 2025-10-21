@@ -222,7 +222,13 @@ const contractRepository = {
   }> {
     const { companyId, page, pageSize, searchBy, keyword } = params;
 
-    const where: Prisma.ContractWhereInput = { companyId };
+    const where: Prisma.ContractWhereInput = {
+      companyId,
+      status: 'contractSuccessful', // 계약 성공 건만
+      documents: {
+        some: {}, // 문서가 1건 이상인 계약만
+      },
+    };
 
     // contractName 검색 = 차량 모델명 OR 고객 이름
     if (searchBy === 'contractName' && keyword) {
@@ -279,6 +285,16 @@ const contractRepository = {
   async customerFindById(customerId: number) {
     return prisma.customer.findUnique({
       where: { id: customerId },
+    });
+  },
+
+  /** -------------------------------------------------
+   * 📁 계약 문서 업데이트 (contractId 연결)
+   * ------------------------------------------------- */
+  async updateContractDocument(documentId: number, contractId: number) {
+    return prisma.contractDocument.update({
+      where: { id: documentId },
+      data: { contractId },
     });
   },
 };

@@ -135,6 +135,16 @@ const contractService = {
       if (customer.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
     }
 
+    // contractDocuments 처리 (파일 업로드 후 계약에 연결)
+    if (dto.contractDocuments && dto.contractDocuments.length > 0) {
+      // 각 문서의 contractId를 현재 계약으로 업데이트
+      await Promise.all(
+        dto.contractDocuments.map(async (doc) => {
+          await contractRepository.updateContractDocument(doc.id, contractId);
+        })
+      );
+    }
+
     // DTO → Input 변환
     const updateInput = ContractMapper.fromUpdateDto(dto);
 

@@ -146,8 +146,8 @@ model ContractDocument {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  contract   Contract @relation(fields: [contractId], references: [id])
-  contractId Int      @map("contract_id")
+  contract   Contract? @relation(fields: [contractId], references: [id])
+  contractId Int?      @map("contract_id")
 
   @@map("contract_documents")
 }

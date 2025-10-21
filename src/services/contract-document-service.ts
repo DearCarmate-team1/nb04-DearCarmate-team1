@@ -11,8 +11,8 @@ export class ContractDocumentService {
     return await this.repository.findDrafts();
   }
 
-  async upload(file: Express.Multer.File, contractId: number) {
-    return await this.repository.saveFile(file, contractId);
+  async upload(file: Express.Multer.File) {
+    return await this.repository.saveFile(file);
   }
 
   async download(id: number) {

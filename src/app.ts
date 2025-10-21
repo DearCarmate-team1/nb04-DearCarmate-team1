@@ -15,6 +15,7 @@ import customerRoutes from './routes/customer-routes.js';
 import carRoute from './routes/car-route.js';
 import dashboardRoute from './routes/dashboard-route.js';
 import contractRoute from './routes/contract-route.js';
+import contractDocumentRoute from './routes/contract-document-routes.js';
 
 import { PORT, CORS_ORIGINS, NODE_ENV, BASE_URL } from './configs/constants.js';
 import { notFoundHandler } from './middlewares/not-found-handler.js';
@@ -87,7 +88,7 @@ app.use('/customers', customerRoutes);
 app.use('/cars', carRoute);
 app.use('/dashboard', dashboardRoute);
 app.use('/contracts', contractRoute);
-
+app.use('/contractDocuments', contractDocumentRoute);
 
 // ==========================
 // ❌ 404 핸들러

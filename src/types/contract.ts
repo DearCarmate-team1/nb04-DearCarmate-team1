@@ -26,7 +26,7 @@ export interface ContractDocumentEntity {
   fileKey: string;
   mimeType: string;
   size: number;
-  contractId: number;
+  contractId: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
