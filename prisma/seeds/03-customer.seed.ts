@@ -72,7 +72,6 @@ export async function seed() {
           region,
           email,
           memo,
-          contractCount: 0,
           companyId: company.id,
         },
       });

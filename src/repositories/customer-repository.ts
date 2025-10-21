@@ -20,11 +20,23 @@ export class CustomerRepository {
         skip,
         take,
         orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: { contract: true }, // 계약 수 동적 계산
+          },
+        },
       }),
       prisma.customer.count({ where }),
     ]);
 
-    return { customers, total };
+    // contractCount 필드 추가
+    const customersWithCount = customers.map((customer) => ({
+      ...customer,
+      contractCount: customer._count.contract,
+      _count: undefined, // _count 제거
+    }));
+
+    return { customers: customersWithCount, total };
   }
 
   // 고객 상세 조회
