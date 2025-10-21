@@ -31,17 +31,23 @@ export class ContractDocumentController {
   }
 
   // 계약서 업로드
-  async upload(req: Request, res: Response, contractId: number) {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "파일이 필요합니다" });
-      }
-      await this.service.upload(req.file, contractId);
-      return res.status(200).json({ message: "계약서가 성공적으로 업로드되었습니다" });
-    } catch {
-      return res.status(400).json({ message: "잘못된 요청입니다" });
+  async upload(req: Request, res: Response) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "파일이 필요합니다" });
     }
+
+    const contractId = Number(req.body.contractId); // form-data로 전송된 계약 ID
+    if (!contractId) {
+      return res.status(400).json({ message: "contractId가 필요합니다" });
+    }
+
+    await this.service.upload(req.file, contractId);
+    return res.status(200).json({ message: "계약서가 성공적으로 업로드되었습니다" });
+  } catch (error) {
+    return res.status(400).json({ message: error instanceof Error ? error.message : "잘못된 요청입니다" });
   }
+}
 
   // 계약서 다운로드
   async download(req: Request, res: Response) {
