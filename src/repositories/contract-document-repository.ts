@@ -1,7 +1,5 @@
 import type { Express } from "express";
-import type { PrismaClient } from '@prisma/client';
-
-const { prisma }: { prisma: PrismaClient } = require("../../prisma");
+import prisma from "../configs/prisma-client";
 
 interface FindAllParams {
   page: number;

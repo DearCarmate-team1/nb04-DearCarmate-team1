@@ -12,12 +12,6 @@ export class ContractDocumentService {
   }
 
   async upload(file: Express.Multer.File, contractId: number) {
-    // 파일 확장자 검사
-    const validExtensions = [".pdf", ".doc", ".docx"];
-    const isValid = validExtensions.some((ext) => file.originalname.endsWith(ext));
-    if (!isValid) throw new Error("유효하지 않은 파일 형식입니다");
-
-    // DB 저장
     return await this.repository.saveFile(file, contractId);
   }
 
