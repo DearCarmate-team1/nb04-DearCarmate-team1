@@ -16,7 +16,7 @@ router.get("/draft", authenticate, controller.draftList.bind(controller));
 router.post(
   "/upload",
   authenticate,
-  upload.single("contractDocument"),
+  upload.single("file"),
   controller.upload.bind(controller)
 );
 

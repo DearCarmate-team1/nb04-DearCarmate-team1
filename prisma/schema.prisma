@@ -50,15 +50,14 @@ model User {
 }
 
 model Customer {
-  id            Int     @id @default(autoincrement())
-  name          String  @db.VarChar(50)
-  gender        String  @db.VarChar(10)
-  phoneNumber   String  @map("phone_number") @db.VarChar(20)
-  ageGroup      String? @map("age_group") @db.VarChar(20)
-  region        String? @db.VarChar(50)
-  email         String? @db.VarChar(100)
-  memo          String? @db.Text
-  contractCount Int     @default(0) @map("contract_count") // 계약 횟수
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(50)
+  gender      String  @db.VarChar(10)
+  phoneNumber String  @map("phone_number") @db.VarChar(20)
+  ageGroup    String? @map("age_group") @db.VarChar(20)
+  region      String? @db.VarChar(50)
+  email       String? @db.VarChar(100)
+  memo        String? @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -146,8 +145,8 @@ model ContractDocument {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  contract   Contract @relation(fields: [contractId], references: [id])
-  contractId Int      @map("contract_id")
+  contract   Contract? @relation(fields: [contractId], references: [id])
+  contractId Int?      @map("contract_id")
 
   @@map("contract_documents")
 }
@@ -156,7 +155,7 @@ model Meeting {
   id   Int      @id @default(autoincrement())
   date DateTime
 
-  contract   Contract @relation(fields: [contractId], references: [id])
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
   contractId Int      @map("contract_id")
 
   notifications Notification[]
@@ -168,7 +167,7 @@ model Notification {
   id        Int      @id @default(autoincrement())
   alarmTime DateTime @map("alarm_time")
 
-  meeting   Meeting @relation(fields: [meetingId], references: [id])
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   meetingId Int     @map("meeting_id")
 
   @@map("notifications")

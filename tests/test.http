@@ -11,3 +11,12 @@ Content-Type: application/json
 	"companyName": "시스템관리",
 	"companyCode": "ADMIN"
 }
+
+###
+POST http://localhost:3001/auth/login
+Content-Type: application/json
+
+{
+	"email": "admin@dearcarmate.com",
+	"password": "admin1234"
+}
