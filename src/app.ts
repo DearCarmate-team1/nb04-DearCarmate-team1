@@ -5,8 +5,10 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 
 import prisma from './configs/prisma-client.js';
+import { specs } from './configs/swagger.js';
 import companyRoute from './routes/company-route.js';
 import userRoute from './routes/user-route.js';
 import authRoute from './routes/auth-route.js';
@@ -76,6 +78,11 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
   });
 });
+
+// ==========================
+// 📖 API 문서 (Swagger)
+// ==========================
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // ==========================
 // 🧩 라우터 등록
