@@ -41,9 +41,9 @@ const dashboardRepository = {
   },
 
   /**
-   * 특정 기간 동안 완료된 계약의 총 개수를 조회합니다.
+   * [수정됨] 특정 기간 동안 완료된 계약의 총 개수를 조회합니다.
    */
-  async getCompletedContractsCountByDateRange(
+  async getCompletedContractsCountForMonth(
     companyId: number,
     startDate: Date,
     endDate: Date,
@@ -61,7 +61,19 @@ const dashboardRepository = {
   },
 
   /**
-   * 차종별 계약 수를 집계합니다.
+   * [추가됨] 전체 기간 동안 완료된 계약의 총 개수를 조회합니다.
+   */
+  async getAllTimeCompletedContractsCount(companyId: number) {
+    return prisma.contract.count({
+      where: {
+        companyId,
+        status: ContractStatus.contractSuccessful,
+      },
+    });
+  },
+
+  /**
+   * [수정됨] 차종별 계약 수를 집계합니다. (성공한 계약만)
    */
   async getContractsCountByCarType(companyId: number) {
     return prisma.contract.groupBy({
@@ -71,6 +83,7 @@ const dashboardRepository = {
       },
       where: {
         companyId,
+        status: ContractStatus.contractSuccessful, // "성공" 상태 필터 추가
       },
     });
   },

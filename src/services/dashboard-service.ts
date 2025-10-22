@@ -15,14 +15,14 @@ const dashboardService = {
       monthlySales, 
       lastMonthSales, 
       proceedingContractsCount, 
-      completedContractsCount, 
+      completedContractsCount, // 변수명은 그대로 사용
       contractsByCar, 
       salesByCar
     ] = await Promise.all([
       dashboardRepository.getSalesByDateRange(companyId, firstDayCurrentMonth, firstDayNextMonth),
       dashboardRepository.getSalesByDateRange(companyId, firstDayLastMonth, firstDayCurrentMonth),
       dashboardRepository.getProceedingContractsCount(companyId),
-      dashboardRepository.getCompletedContractsCountByDateRange(companyId, firstDayCurrentMonth, firstDayNextMonth),
+      dashboardRepository.getAllTimeCompletedContractsCount(companyId), // [수정됨] 전체 기간 조회 함수로 변경
       dashboardRepository.getContractsCountByCarType(companyId),
       dashboardRepository.getSalesByCarType(companyId),
     ]);
