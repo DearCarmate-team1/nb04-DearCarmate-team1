@@ -297,6 +297,16 @@ const contractRepository = {
       data: { contractId },
     });
   },
+
+  /** -------------------------------------------------
+   * 📁 계약 문서 연결 해제 (해당 계약의 모든 문서)
+   * ------------------------------------------------- */
+  async disconnectAllDocuments(contractId: number) {
+    return prisma.contractDocument.updateMany({
+      where: { contractId },
+      data: { contractId: null },
+    });
+  },
 };
 
 export default contractRepository;

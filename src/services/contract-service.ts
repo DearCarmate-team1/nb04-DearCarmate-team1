@@ -136,13 +136,18 @@ const contractService = {
     }
 
     // contractDocuments 처리 (파일 업로드 후 계약에 연결)
-    if (dto.contractDocuments && dto.contractDocuments.length > 0) {
-      // 각 문서의 contractId를 현재 계약으로 업데이트
-      await Promise.all(
-        dto.contractDocuments.map(async (doc) => {
-          await contractRepository.updateContractDocument(doc.id, contractId);
-        })
-      );
+    if (dto.contractDocuments !== undefined) {
+      // 1. 먼저 기존 계약에 연결된 모든 문서의 contractId를 null로 초기화 (연결 해제)
+      await contractRepository.disconnectAllDocuments(contractId);
+
+      // 2. 새로 선택한 문서들만 현재 계약에 연결
+      if (dto.contractDocuments.length > 0) {
+        await Promise.all(
+          dto.contractDocuments.map(async (doc) => {
+            await contractRepository.updateContractDocument(doc.id, contractId);
+          })
+        );
+      }
     }
 
     // DTO → Input 변환
