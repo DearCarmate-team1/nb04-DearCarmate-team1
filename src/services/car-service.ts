@@ -16,10 +16,11 @@ import type {
 } from '../types/car.js';
 import { CarMapper } from '../mappers/car-mapper.js';
 import { csvParser } from '../utils/csv-parser.js';
+import type { AuthUser } from '../types/auth-user.js';
 
 const carService = {
   // 🚗 차량 등록
-  async create(user: any, dto: CreateCarDto): Promise<CarResponseModel> {
+  async create(user: AuthUser, dto: CreateCarDto): Promise<CarResponseModel> {
     const { manufacturer, model, carNumber } = dto;
 
     // ✅ 중복 차량 번호 검사
@@ -39,7 +40,7 @@ const carService = {
   },
 
   // 📋 차량 목록
-  async list(user: any, query: CarQueryDto): Promise<CarListResponse> {
+  async list(user: AuthUser, query: CarQueryDto): Promise<CarListResponse> {
     const { page, pageSize, status, searchBy, keyword } = query;
 
     const { totalItemCount, data } = await carRepository.findPaged({
@@ -57,7 +58,7 @@ const carService = {
   },
 
   // 🔍 상세
-  async detail(user: any, carId: number): Promise<CarResponseModel> {
+  async detail(user: AuthUser, carId: number): Promise<CarResponseModel> {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
     if (car.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
@@ -67,7 +68,7 @@ const carService = {
   },
 
   // ✏️ 수정
-  async update(user: any, carId: number, dto: UpdateCarDto): Promise<CarResponseModel> {
+  async update(user: AuthUser, carId: number, dto: UpdateCarDto): Promise<CarResponseModel> {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
     if (car.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
@@ -96,7 +97,7 @@ const carService = {
   },
 
   // 🗑 삭제
-  async remove(user: any, carId: number): Promise<{ message: string }> {
+  async remove(user: AuthUser, carId: number): Promise<{ message: string }> {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
     if (car.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
@@ -120,7 +121,7 @@ const carService = {
   },
 
   /** 🚚 대용량 CSV 업로드 (메모리 기반 - 디스크 저장 안 함) */
-  async bulkUpload(user: any, file: Express.Multer.File | undefined): Promise<BulkUploadResult> {
+  async bulkUpload(user: AuthUser, file: Express.Multer.File | undefined): Promise<BulkUploadResult> {
     // Step 1: 파일 검증
     if (!file) {
       throw new BadRequestError('CSV 파일이 필요합니다.');

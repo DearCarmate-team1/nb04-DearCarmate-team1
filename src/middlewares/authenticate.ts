@@ -8,6 +8,7 @@ import {
   BadRequestError,
   NotFoundError,
 } from '../configs/custom-error.js';
+import type { AuthUser } from '../types/auth-user.js';
 
 export async function authenticate(req: Request, _res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
@@ -43,7 +44,12 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
       return next(new NotFoundError('사용자를 찾을 수 없습니다.'));
     }
 
-    req.user = user;
+    // AuthUser 형태로 명시적 할당
+    req.user = {
+      id: user.id,
+      isAdmin: user.isAdmin,
+      companyId: user.companyId,
+    } satisfies AuthUser;
 
     next();
   } catch (err) {

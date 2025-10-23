@@ -1,9 +1,21 @@
 import prisma from '../configs/prisma-client.js';
 export class CustomerRepository {
   async create(companyId: number, data: any) {
-    return prisma.customer.create({
+    const customer = await prisma.customer.create({
       data: { ...data, companyId },
+      include: {
+        _count: {
+          select: { contract: true }, // 계약 수 동적 계산
+        },
+      },
     });
+
+    // contractCount 필드 추가 (신규 고객이므로 항상 0)
+    return {
+      ...customer,
+      contractCount: customer._count.contract,
+      _count: undefined, // _count 제거
+    };
   }
   // 고객 목록 조회 (검색 + 페이지네이션)
   async findMany(companyId: number, searchBy: string, keyword: string, skip: number, take: number) {
@@ -41,16 +53,42 @@ export class CustomerRepository {
 
   // 고객 상세 조회
   async findById(companyId: number, customerId: number) {
-    return prisma.customer.findFirst({
+    const customer = await prisma.customer.findFirst({
       where: { id: customerId, companyId },
+      include: {
+        _count: {
+          select: { contract: true }, // 계약 수 동적 계산
+        },
+      },
     });
+
+    if (!customer) return null;
+
+    // contractCount 필드 추가
+    return {
+      ...customer,
+      contractCount: customer._count.contract,
+      _count: undefined, // _count 제거
+    };
   }
   // 고객 정보 수정
   async update(customerId: number, data: any) {
-    return prisma.customer.update({
+    const customer = await prisma.customer.update({
       where: { id: customerId },
       data,
+      include: {
+        _count: {
+          select: { contract: true }, // 계약 수 동적 계산
+        },
+      },
     });
+
+    // contractCount 필드 추가
+    return {
+      ...customer,
+      contractCount: customer._count.contract,
+      _count: undefined, // _count 제거
+    };
   }
   // 고객 삭제
   async delete(customerId: number) {
