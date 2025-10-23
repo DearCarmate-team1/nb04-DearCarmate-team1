@@ -16,6 +16,7 @@ import type {
 } from '../types/contract.js';
 import { ContractMapper } from '../mappers/contract-mapper.js';
 import type { ContractStatus, CarStatus } from '@prisma/client';
+import type { AuthUser } from '../types/auth-user.js';
 
 /**
  * 계약 상태에 따른 차량 상태 결정
@@ -39,7 +40,7 @@ const contractService = {
   /** -------------------------------------------------
    * 📝 계약 생성
    * ------------------------------------------------- */
-  async create(user: any, dto: CreateContractDto): Promise<ContractResponseModel> {
+  async create(user: AuthUser, dto: CreateContractDto): Promise<ContractResponseModel> {
     // 차량 존재 및 권한 검증
     const car = await carRepository.findById(dto.carId);
     if (!car) throw new NotFoundError('차량을 찾을 수 없습니다.');
@@ -71,7 +72,7 @@ const contractService = {
   /** -------------------------------------------------
    * 📋 계약 목록 조회 (칸반 형태 - status별 그룹화)
    * ------------------------------------------------- */
-  async list(user: any, query: ContractQueryDto): Promise<ContractKanbanResponse> {
+  async list(user: AuthUser, query: ContractQueryDto): Promise<ContractKanbanResponse> {
     const { searchBy, keyword } = query;
 
     // 회사별 계약 조회
@@ -91,7 +92,7 @@ const contractService = {
   /** -------------------------------------------------
    * 🔍 계약 상세 조회
    * ------------------------------------------------- */
-  async detail(user: any, contractId: number): Promise<ContractResponseModel> {
+  async detail(user: AuthUser, contractId: number): Promise<ContractResponseModel> {
     const contract = await contractRepository.findById(contractId);
     if (!contract) throw new NotFoundError('계약을 찾을 수 없습니다.');
     if (contract.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
@@ -104,7 +105,7 @@ const contractService = {
    * ✏️ 계약 수정
    * ------------------------------------------------- */
   async update(
-    user: any,
+    user: AuthUser,
     contractId: number,
     dto: UpdateContractDto,
   ): Promise<ContractResponseModel> {
@@ -179,7 +180,7 @@ const contractService = {
   /** -------------------------------------------------
    * 🗑️ 계약 삭제
    * ------------------------------------------------- */
-  async remove(user: any, contractId: number): Promise<{ message: string }> {
+  async remove(user: AuthUser, contractId: number): Promise<{ message: string }> {
     const contract = await contractRepository.findById(contractId);
     if (!contract) throw new NotFoundError('계약을 찾을 수 없습니다.');
     if (contract.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
@@ -203,7 +204,7 @@ const contractService = {
   /** -------------------------------------------------
    * 🚗 계약용 차량 목록 조회
    * ------------------------------------------------- */
-  async getCarsForContract(user: any): Promise<SelectListItem[]> {
+  async getCarsForContract(user: AuthUser): Promise<SelectListItem[]> {
     const cars = await contractRepository.findCarsForContract(user.companyId);
 
     return cars.map((car) => ({
@@ -215,7 +216,7 @@ const contractService = {
   /** -------------------------------------------------
    * 👥 계약용 고객 목록 조회
    * ------------------------------------------------- */
-  async getCustomersForContract(user: any): Promise<SelectListItem[]> {
+  async getCustomersForContract(user: AuthUser): Promise<SelectListItem[]> {
     const customers = await contractRepository.findCustomersForContract(user.companyId);
 
     return customers.map((customer) => ({
@@ -227,7 +228,7 @@ const contractService = {
   /** -------------------------------------------------
    * 👤 계약용 유저 목록 조회
    * ------------------------------------------------- */
-  async getUsersForContract(user: any): Promise<SelectListItem[]> {
+  async getUsersForContract(user: AuthUser): Promise<SelectListItem[]> {
     const users = await contractRepository.findUsersForContract(user.companyId);
 
     return users.map((u) => ({
@@ -240,7 +241,7 @@ const contractService = {
    * 📁 계약서 업로드 계약 목록 조회 (페이지네이션)
    * ------------------------------------------------- */
   async getForDocumentUpload(
-    user: any,
+    user: AuthUser,
     query: ContractDocumentQueryDto,
   ): Promise<ContractDocumentListResponse> {
     const { page, pageSize, searchBy, keyword } = query;
@@ -262,7 +263,7 @@ const contractService = {
   /** -------------------------------------------------
    * 🎯 계약서 추가용 계약 목록 조회 (선택 리스트용 - 간단)
    * ------------------------------------------------- */
-  async getForUpload(user: any): Promise<SelectListItem[]> {
+  async getForUpload(user: AuthUser): Promise<SelectListItem[]> {
     const contracts = await contractRepository.findForUpload(user.companyId);
 
     return contracts.map((c) =>

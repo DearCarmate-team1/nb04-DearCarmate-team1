@@ -4,6 +4,7 @@ import { CustomerRepository } from '../repositories/customer-repository.js';
 import { csvParser } from '../utils/csv-parser.js';
 import { BadRequestError } from '../configs/custom-error.js';
 import type { CustomerCsvRow, CustomerBulkUploadResult } from '../types/customer.js';
+import type { AuthUser } from '../types/auth-user.js';
 
 const customerRepository = new CustomerRepository();
 
@@ -55,7 +56,7 @@ export class CustomerService {
   }
   /** 📤 고객 CSV 대용량 업로드 (메모리 기반 - 디스크 저장 안 함) */
   async bulkUpload(
-    user: any,
+    user: AuthUser,
     file: Express.Multer.File | undefined,
   ): Promise<CustomerBulkUploadResult> {
     // Step 1: 파일 검증
