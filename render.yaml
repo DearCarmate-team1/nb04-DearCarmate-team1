@@ -1,0 +1,46 @@
+# render.yaml - Render Blueprint
+# 이 파일을 사용하면, Render 대시보드에서 "New Blueprint"을 선택하여
+# 데이터베이스와 웹 서비스를 한번에 생성하고 배포할 수 있습니다.
+
+services:
+  # 1. PostgreSQL 데이터베이스 서비스
+  - name: dearcarmate-db
+    type: psql
+    plan: free # 무료 플랜 사용 (테스트용)
+    psqlVersion: 15 # PostgreSQL 버전
+
+  # 2. Node.js 백엔드 웹 서비스
+  - name: dearcarmate-backend
+    type: web
+    plan: free # 무료 플랜 사용 (테스트용)
+    runtime: node
+    repo: https://github.com/DearCarmate/nb04-DearCarmate-team1 # 여기에 실제 GitHub 저장소 주소를 입력하세요.
+    branch: develop # 배포할 브랜치 (예: main 또는 develop)
+    buildCommand: "npm install && npm run db:deploy && npm run db:seed && npm run build"
+    startCommand: "npm run start:prod"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromService:
+          type: psql
+          name: dearcarmate-db
+          property: connectionString
+      # ----------------------------------------------------------------
+      # ❗️ 아래 비밀 키들은 Render 대시보드의 "Environment" 탭에서
+      # "Secret File"이 아닌, "Normal Environment Variables"로 직접 추가해주세요.
+      # ----------------------------------------------------------------
+      - key: ACCESS_TOKEN_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      - key: ACCESS_TOKEN_EXPIRES_IN
+        sync: false
+      - key: REFRESH_TOKEN_EXPIRES_IN
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
