@@ -1,5 +1,4 @@
-import type { Express } from "express";
-import prisma from "../configs/prisma-client";
+import prisma from '../configs/prisma-client.js';
 
 interface FindAllParams {
   page: number;
@@ -8,8 +7,7 @@ interface FindAllParams {
   keyword?: string;
 }
 
-export class ContractDocumentRepository {
-  // 계약서 목록 조회 (페이징 + 검색)
+const contractDocumentRepository = {
   async findAll({ page, pageSize, searchBy, keyword }: FindAllParams) {
     const where = searchBy && keyword ? { [searchBy]: { contains: keyword } } : {};
 
@@ -19,12 +17,8 @@ export class ContractDocumentRepository {
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
-        contract: { // relation 포함
-          select: {
-            id: true,
-            contractPrice: true,
-            status: true,
-          },
+        contract: {
+          select: { id: true, contractPrice: true, status: true },
         },
       },
     });
@@ -35,43 +29,28 @@ export class ContractDocumentRepository {
       totalItemCount,
       data,
     };
-  }
+  },
 
-  // 문서 등록용 계약 목록 조회 (문서가 없는 계약 성공 건)
   async findDrafts() {
     const contracts = await prisma.contract.findMany({
       where: {
-        status: "contractSuccessful", // 계약 성공 건만
-        documents: {
-          none: {}, // 문서가 0건인 계약만
-        },
+        status: 'contractSuccessful',
+        documents: { none: {} },
       },
       include: {
-        car: {
-          select: {
-            carNumber: true,
-            model: {
-              select: {
-                model: true
-              }
-            }
-          }
-        },
+        car: { select: { carNumber: true, model: { select: { model: true } } } },
         customer: { select: { name: true } },
       },
       orderBy: { id: 'desc' },
     });
 
-    // data 문자열 생성: 차량 모델 - 고객명
     return contracts.map(c => ({
       id: c.id,
       data: `${c.car.model.model} - ${c.customer.name} 고객님`,
     }));
-  }
+  },
 
-  // 계약서 파일 저장 (contractId는 나중에 업데이트됨)
   async saveFile(file: Express.Multer.File) {
-    // 한글 파일명 디코딩
     const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
 
     const document = await prisma.contractDocument.create({
@@ -81,19 +60,17 @@ export class ContractDocumentRepository {
         filePath: file.path,
         mimeType: file.mimetype,
         size: file.size,
-        // contractId는 optional - 나중에 계약 업데이트 시 연결
       },
     });
     return document.id;
-  }
+  },
 
-  // ID로 계약서 조회
   async findById(id: number) {
     return await prisma.contractDocument.findUnique({
       where: { id },
-      include: {
-        contract: true,
-      },
+      include: { contract: true },
     });
-  }
-}
+  },
+};
+
+export default contractDocumentRepository;

@@ -1,75 +1,89 @@
 import { Request, Response } from 'express';
-import { ContractDocumentService } from '../services/contract-document-service';
+import contractDocumentService from '../services/contract-document-service.js';
 import contractService from '../services/contract-service.js';
 
-export class ContractDocumentController {
-  private service = new ContractDocumentService();
+const contractDocumentController = {
 
-  // 계약서 목록 조회 (문서가 1건 이상인 계약 목록)
-  async list(req: Request, res: Response) {
+   //계약서 목록 조회 (문서가 1건 이상인 계약 목록)
+  async list(req: Request, res: Response): Promise<void> {
     try {
       const { page = 1, pageSize = 10, searchBy, keyword } = req.query;
+
       const result = await contractService.getForDocumentUpload(req.user, {
         page: Number(page),
         pageSize: Number(pageSize),
         searchBy: searchBy as 'contractName' | undefined,
         keyword: keyword as string | undefined,
       });
-      return res.status(200).json(result);
+
+      res.status(200).json(result);
     } catch (error) {
-      return res.status(400).json({ message: '잘못된 요청입니다' });
+      console.error('📄 list() error:', error);
+      res.status(400).json({ message: '잘못된 요청입니다' });
     }
-  }
+  },
 
-  // 계약서 업로드 시 계약 목록 조회
-  async draftList(req: Request, res: Response) {
+ 
+   //계약서 업로드용 계약 목록 조회
+  async draftList(req: Request, res: Response): Promise<void> {
     try {
-      const data = await this.service.draftList();
-      return res.status(200).json(data);
-    } catch {
-      return res.status(400).json({ message: '잘못된 요청입니다' });
+      const data = await contractDocumentService.draftList();
+      res.status(200).json(data);
+    } catch (error) {
+      console.error('🧾 draftList() error:', error);
+      res.status(400).json({ message: '잘못된 요청입니다' });
     }
-  }
+  },
 
-  // 계약서 업로드
-  async upload(req: Request, res: Response) {
+
+   //계약서 업로드
+  async upload(req: Request, res: Response): Promise<void> {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: '파일이 필요합니다' });
+        res.status(400).json({ message: '파일이 필요합니다' });
+        return;
       }
 
-      const documentId = await this.service.upload(req.file);
+      const documentId = await contractDocumentService.upload(req.file);
       res.status(200).json({ contractDocumentId: documentId });
     } catch (error) {
-      return res
-        .status(400)
-        .json({ message: error instanceof Error ? error.message : '잘못된 요청입니다' });
+      console.error('📤 upload() error:', error);
+      res.status(400).json({
+        message: error instanceof Error ? error.message : '잘못된 요청입니다',
+      });
     }
-  }
+  },
 
-  // 계약서 다운로드
-  async download(req: Request, res: Response) {
+   //계약서 다운로드
+  async download(req: Request, res: Response): Promise<void> {
     try {
       const { contractDocumentId } = req.params;
-      const file = await this.service.download(Number(contractDocumentId));
+      const file = await contractDocumentService.download(Number(contractDocumentId));
 
-      // 한글 파일명 인코딩 (RFC 5987)
+      if (!file) {
+        res.status(404).json({ message: '파일을 찾을 수 없습니다' });
+        return;
+      }
+
+      //한글 파일명 인코딩 (RFC 5987 규격)
       const encodedFileName = encodeURIComponent(file.fileName);
       res.setHeader(
         'Content-Disposition',
-        `attachment; filename*=UTF-8''${encodedFileName}`
+        `attachment; filename*=UTF-8''${encodedFileName}`,
       );
       res.setHeader('Content-Type', file.mimeType);
 
-      // 절대 경로로 변환
-      const path = require('path');
+      //절대 경로 변환 후 전송
+      const path = await import('path');
       const absolutePath = path.resolve(file.filePath);
-      return res.sendFile(absolutePath);
+      res.sendFile(absolutePath);
     } catch (error) {
-      console.error('다운로드 에러:', error);
-      return res.status(400).json({
-        message: error instanceof Error ? error.message : '잘못된 요청입니다'
+      console.error('📥 download() error:', error);
+      res.status(400).json({
+        message: error instanceof Error ? error.message : '잘못된 요청입니다',
       });
     }
-  }
-}
+  },
+};
+
+export default contractDocumentController;

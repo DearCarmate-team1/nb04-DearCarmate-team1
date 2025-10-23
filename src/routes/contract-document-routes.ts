@@ -1,27 +1,19 @@
-import { Router } from "express";
-import { ContractDocumentController } from "../controllers/contract-document-controller";
-import { authenticate } from "../middlewares/authenticate";
-import { upload } from "../middlewares/upload-middleware";
-import asyncHandler from "../configs/async-handler.js";
+import { Router } from 'express';
+import contractDocumentController from '../controllers/contract-document-controller.js';
+import { authenticate } from '../middlewares/authenticate.js';
+import { upload } from '../middlewares/upload-middleware.js';
+import asyncHandler from '../configs/async-handler.js';
 
 const router = Router();
-const controller = new ContractDocumentController();
 
-router.get("/", authenticate, asyncHandler(controller.list.bind(controller)));
-
-router.get("/drafts", authenticate, asyncHandler(controller.draftList.bind(controller)));
-
-router.post(
-  "/upload",
-  authenticate,
-  upload.single("file"),
-  asyncHandler(controller.upload.bind(controller))
-);
+router.get('/', authenticate, asyncHandler(contractDocumentController.list));
+router.get('/drafts', authenticate, asyncHandler(contractDocumentController.draftList));
+router.post('/:contractId/upload', upload.single('file'), contractDocumentController.upload);
 
 router.get(
-  "/:contractDocumentId/download",
+  '/:contractDocumentId/download',
   authenticate,
-  asyncHandler(controller.download.bind(controller))
+  asyncHandler(contractDocumentController.download)
 );
 
 export default router;

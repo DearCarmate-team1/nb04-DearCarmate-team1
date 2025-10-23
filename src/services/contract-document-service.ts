@@ -1,23 +1,23 @@
-import { ContractDocumentRepository } from "../repositories/contract-document-repository";
+import contractDocumentRepository from '../repositories/contract-document-repository.js';
 
-export class ContractDocumentService {
-  private repository = new ContractDocumentRepository();
-
+const contractDocumentService = {
   async list(params: { page: number; pageSize: number; searchBy?: string; keyword?: string }) {
-    return await this.repository.findAll(params);
-  }
+    return await contractDocumentRepository.findAll(params);
+  },
 
   async draftList() {
-    return await this.repository.findDrafts();
-  }
+    return await contractDocumentRepository.findDrafts();
+  },
 
   async upload(file: Express.Multer.File) {
-    return await this.repository.saveFile(file);
-  }
+    return await contractDocumentRepository.saveFile(file);
+  },
 
   async download(id: number) {
-    const file = await this.repository.findById(id);
-    if (!file) throw new Error("파일을 찾을 수 없습니다");
+    const file = await contractDocumentRepository.findById(id);
+    if (!file) throw new Error('파일을 찾을 수 없습니다');
     return file;
-  }
-}
+  },
+};
+
+export default contractDocumentService;
