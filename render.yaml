@@ -14,10 +14,10 @@ services:
     type: web
     plan: free # 무료 플랜 사용 (테스트용)
     runtime: node
-    repo: https://github.com/DearCarmate/nb04-DearCarmate-team1 # 여기에 실제 GitHub 저장소 주소를 입력하세요.
+    repo: https://github.com/DearCarmate-team1/nb04-DearCarmate-team1.git # 여기에 실제 GitHub 저장소 주소를 입력하세요.
     branch: develop # 배포할 브랜치 (예: main 또는 develop)
-    buildCommand: "npm install && npm run db:deploy && npm run db:seed && npm run build"
-    startCommand: "npm run start:prod"
+    buildCommand: 'npm install && npm run db:deploy && npm run db:seed && npm run build'
+    startCommand: 'npm run start:prod'
     envVars:
       - key: NODE_ENV
         value: production
