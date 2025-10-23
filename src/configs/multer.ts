@@ -2,6 +2,31 @@ import multer from 'multer';
 import path from 'path';
 
 // ========================================
+// 공통 유틸리티
+// ========================================
+
+/**
+ * 한글 파일명 디코딩 (latin1 → utf8)
+ * Multer는 파일명을 latin1로 인코딩하므로 한글 처리를 위해 디코딩 필요
+ */
+export function decodeFileName(originalName: string): string {
+  return Buffer.from(originalName, 'latin1').toString('utf8');
+}
+
+/**
+ * 타임스탬프 기반 안전한 파일명 생성
+ * - 한글 파일명 디코딩
+ * - 특수문자 제거 (알파벳, 숫자, 한글, 공백, .-_ 만 허용)
+ * - 타임스탬프 추가로 중복 방지
+ */
+export function generateSafeFileName(originalName: string): string {
+  const decoded = decodeFileName(originalName);
+  const timestamp = Date.now();
+  const sanitized = decoded.replace(/[^a-zA-Z0-9가-힣.\s_-]/g, '_');
+  return `${timestamp}_${sanitized}`;
+}
+
+// ========================================
 // 파일 필터 정의
 // ========================================
 
@@ -32,12 +57,21 @@ const imageFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
 };
 
 /**
- * 문서 필터 (이미지 + PDF)
+ * 문서 필터 (PDF, DOC, DOCX)
  * - 용도: 계약서 문서
+ * - 한글 파일명 지원
  */
 const documentFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
-  if (!['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'].includes(file.mimetype)) {
-    return cb(new Error('이미지 또는 PDF만 업로드할 수 있습니다.'));
+  const allowedMimes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
+  const allowedExtensions = ['.pdf', '.doc', '.docx'];
+  const ext = path.extname(decodeFileName(file.originalname)).toLowerCase();
+
+  if (!allowedMimes.includes(file.mimetype) && !allowedExtensions.includes(ext)) {
+    return cb(new Error('PDF, DOC, DOCX 파일만 업로드할 수 있습니다.'));
   }
   cb(null, true);
 };

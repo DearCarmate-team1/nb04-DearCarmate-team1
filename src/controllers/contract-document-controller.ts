@@ -61,9 +61,19 @@ export class ContractDocumentController {
       );
       res.setHeader('Content-Type', file.mimeType);
 
-      // 절대 경로로 변환
+      // URL인 경우 로컬 경로로 변환 (개발 환경)
       const path = require('path');
-      const absolutePath = path.resolve(file.filePath);
+      let filePath = file.filePath;
+
+      // URL 형식인 경우 파일 경로 추출
+      if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        // URL에서 pathname 추출 (예: /uploads/documents/xxx.pdf)
+        const url = new URL(filePath);
+        filePath = url.pathname;
+      }
+
+      // 절대 경로로 변환
+      const absolutePath = path.resolve(process.cwd() + filePath);
       return res.sendFile(absolutePath);
     } catch (error) {
       console.error('다운로드 에러:', error);

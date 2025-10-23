@@ -1,20 +1,20 @@
-import { Router } from "express";
-import { ContractDocumentController } from "../controllers/contract-document-controller";
-import { authenticate } from "../middlewares/authenticate";
-import { upload } from "../middlewares/upload-middleware";
-import asyncHandler from "../configs/async-handler.js";
+import { Router } from 'express';
+import { ContractDocumentController } from '../controllers/contract-document-controller.js';
+import { authenticate } from '../middlewares/authenticate.js';
+import { uploadDocument } from '../configs/multer.js';
+import asyncHandler from '../configs/async-handler.js';
 
 const router = Router();
 const controller = new ContractDocumentController();
 
 router.get("/", authenticate, asyncHandler(controller.list.bind(controller)));
 
-router.get("/drafts", authenticate, asyncHandler(controller.draftList.bind(controller)));
+router.get("/draft", authenticate, asyncHandler(controller.draftList.bind(controller)));
 
 router.post(
-  "/upload",
+  '/upload',
   authenticate,
-  upload.single("file"),
+  uploadDocument.single('file'),
   asyncHandler(controller.upload.bind(controller))
 );
 

@@ -1,11 +1,18 @@
-import type { Express } from "express";
-import prisma from "../configs/prisma-client";
+import type { Express } from 'express';
+import prisma from '../configs/prisma-client.js';
 
 interface FindAllParams {
   page: number;
   pageSize: number;
   searchBy?: string;
   keyword?: string;
+}
+
+interface DocumentUploadData {
+  url: string;
+  fileName: string;
+  size: number;
+  mimeType: string;
 }
 
 export class ContractDocumentRepository {
@@ -69,18 +76,19 @@ export class ContractDocumentRepository {
     }));
   }
 
-  // 계약서 파일 저장 (contractId는 나중에 업데이트됨)
-  async saveFile(file: Express.Multer.File) {
-    // 한글 파일명 디코딩
-    const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
-
+  /**
+   * 계약서 파일 저장 (contractId는 나중에 업데이트됨)
+   * @param uploadData - 업로드된 파일 정보 (URL, 파일명, 크기, MIME 타입)
+   * @returns 생성된 문서 ID
+   */
+  async saveFile(uploadData: DocumentUploadData) {
     const document = await prisma.contractDocument.create({
       data: {
-        fileName: originalName,
-        fileKey: file.filename,
-        filePath: file.path,
-        mimeType: file.mimetype,
-        size: file.size,
+        fileName: uploadData.fileName,
+        fileKey: uploadData.url, // URL을 고유 키로 사용
+        filePath: uploadData.url, // URL 저장
+        mimeType: uploadData.mimeType,
+        size: uploadData.size,
         // contractId는 optional - 나중에 계약 업데이트 시 연결
       },
     });

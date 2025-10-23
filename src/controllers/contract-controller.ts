@@ -35,6 +35,10 @@ const contractController = {
 
   // ✏️ 계약 수정
   async update(req: Request, res: Response): Promise<void> {
+    // 디버깅: 프론트엔드에서 보낸 데이터 확인
+    console.log('🔍 계약 수정 요청 데이터:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 contractDocuments:', req.body.contractDocuments);
+
     const result: ContractResponseModel = await contractService.update(
       req.user,
       Number(req.params.contractId),
