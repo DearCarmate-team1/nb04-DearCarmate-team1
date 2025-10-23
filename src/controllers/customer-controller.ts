@@ -7,26 +7,20 @@ export class CustomerController {
   // 고객 등록
   async create(req: Request, res: Response) {
     try {
-      //req.user 존재 확인
-      if (!req.user) {
-        return res.status(401).json({ message: '인증된 사용자가 아닙니다.' });
-      }
-
+      // authenticate 미들웨어에서 req.user 보장
       const companyId = req.user.companyId;
       const customer = await customerService.createCustomer(companyId, req.body);
       return res.status(201).json(customer);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      return res.status(400).json({ message });
     }
   }
 
   // 고객 목록 조회 (검색 + 페이지네이션)
   async list(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ message: '인증된 사용자가 아닙니다.' });
-      }
-
+      // authenticate 미들웨어에서 req.user 보장
       const companyId = req.user.companyId;
 
       // 프론트엔드 요청에 맞게 변수명 수정
@@ -41,59 +35,54 @@ export class CustomerController {
       );
 
       return res.status(200).json(result);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      return res.status(400).json({ message });
     }
   }
 
   // 고객 상세 조회
   async detail(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ message: '인증된 사용자가 아닙니다.' });
-      }
-
+      // authenticate 미들웨어에서 req.user 보장
       const companyId = req.user.companyId;
       const customerId = Number(req.params.customerId);
 
       const customer = await customerService.getCustomerById(companyId, customerId);
       return res.status(200).json(customer);
-    } catch (error: any) {
-      return res.status(404).json({ message: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      return res.status(404).json({ message });
     }
   }
 
   // 고객 수정
   async update(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ message: '인증된 사용자가 아닙니다.' });
-      }
-
+      // authenticate 미들웨어에서 req.user 보장
       const companyId = req.user.companyId;
       const customerId = Number(req.params.customerId);
 
       const updated = await customerService.updateCustomer(companyId, customerId, req.body);
       return res.status(200).json(updated);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      return res.status(400).json({ message });
     }
   }
 
   // 고객 삭제
   async delete(req: Request, res: Response) {
     try {
-      if (!req.user) {
-        return res.status(401).json({ message: '인증된 사용자가 아닙니다.' });
-      }
-
+      // authenticate 미들웨어에서 req.user 보장
       const companyId = req.user.companyId;
       const customerId = Number(req.params.customerId);
 
       await customerService.deleteCustomer(companyId, customerId);
       return res.status(200).json({ message: '고객이 삭제되었습니다.' });
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      return res.status(400).json({ message });
     }
   }
 
