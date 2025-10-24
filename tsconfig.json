@@ -5,6 +5,7 @@
     "target": "es2022", // es2024
     "lib": ["esnext"],
     "types": ["node"], // install -D @types/node
+    "typeRoots": ["./node_modules/@types"],
 
     // File Layout
     "baseUrl": "./",
