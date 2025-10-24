@@ -1,12 +1,16 @@
 // src/services/customer-service.ts
 import { CreateCustomerDTO, UpdateCustomerDTO } from '../dtos/customer-dto.js';
 import { CustomerRepository } from '../repositories/customer-repository.js';
+import { ContractDocumentRepository } from '../repositories/contract-document-repository.js';
 import { csvParser } from '../utils/csv-parser.js';
 import { BadRequestError } from '../configs/custom-error.js';
 import type { CustomerCsvRow, CustomerBulkUploadResult } from '../types/customer.js';
 import type { AuthUser } from '../types/auth-user.js';
+import { deletePhysicalFile } from '../utils/file-delete.js';
+import prisma from '../configs/prisma-client.js';
 
 const customerRepository = new CustomerRepository();
+const documentRepository = new ContractDocumentRepository();
 
 export class CustomerService {
   async createCustomer(companyId: number, data: CreateCustomerDTO) {
@@ -49,9 +53,29 @@ export class CustomerService {
     await this.getCustomerById(companyId, customerId);
     return await customerRepository.update(customerId, data);
   }
-  // 고객 삭제
+  // 고객 삭제 (관련 계약 문서들의 물리적 파일도 함께 삭제)
   async deleteCustomer(companyId: number, customerId: number) {
     await this.getCustomerById(companyId, customerId);
+
+    // 고객과 연결된 모든 계약 ID 조회
+    const contracts = await prisma.contract.findMany({
+      where: { customerId, companyId },
+      select: { id: true },
+    });
+    const contractIds = contracts.map((c) => c.id);
+
+    // 계약들의 문서 파일 삭제
+    if (contractIds.length > 0) {
+      const documents = await documentRepository.findByContractIds(contractIds);
+
+      for (const doc of documents) {
+        await deletePhysicalFile(doc.filePath, 'raw');
+      }
+
+      console.log(`✅ 고객 삭제 시 ${documents.length}개 문서 파일 정리`);
+    }
+
+    // DB에서 고객 삭제 (Cascade가 계약 및 문서 레코드 자동 삭제)
     return await customerRepository.delete(customerId);
   }
   /** 📤 고객 CSV 대용량 업로드 (메모리 기반 - 디스크 저장 안 함) */

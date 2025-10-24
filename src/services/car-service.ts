@@ -17,6 +17,11 @@ import type {
 import { CarMapper } from '../mappers/car-mapper.js';
 import { csvParser } from '../utils/csv-parser.js';
 import type { AuthUser } from '../types/auth-user.js';
+import { ContractDocumentRepository } from '../repositories/contract-document-repository.js';
+import { deletePhysicalFile } from '../utils/file-delete.js';
+import prisma from '../configs/prisma-client.js';
+
+const documentRepository = new ContractDocumentRepository();
 
 const carService = {
   // 🚗 차량 등록
@@ -96,12 +101,31 @@ const carService = {
     return CarMapper.toResponseModel(entity);
   },
 
-  // 🗑 삭제
+  // 🗑 삭제 (관련 계약 문서들의 물리적 파일도 함께 삭제)
   async remove(user: AuthUser, carId: number): Promise<{ message: string }> {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
     if (car.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
 
+    // 차량과 연결된 모든 계약 ID 조회
+    const contracts = await prisma.contract.findMany({
+      where: { carId, companyId: user.companyId },
+      select: { id: true },
+    });
+    const contractIds = contracts.map((c) => c.id);
+
+    // 계약들의 문서 파일 삭제
+    if (contractIds.length > 0) {
+      const documents = await documentRepository.findByContractIds(contractIds);
+
+      for (const doc of documents) {
+        await deletePhysicalFile(doc.filePath, 'raw');
+      }
+
+      console.log(`✅ 차량 삭제 시 ${documents.length}개 문서 파일 정리`);
+    }
+
+    // DB에서 차량 삭제 (Cascade가 계약 및 문서 레코드 자동 삭제)
     await carRepository.delete(carId);
     return { message: '차량이 삭제되었습니다.' };
   },

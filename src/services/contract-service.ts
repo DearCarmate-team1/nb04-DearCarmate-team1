@@ -2,6 +2,8 @@ import contractRepository from '../repositories/contract-repository.js';
 import carRepository from '../repositories/car-repository.js';
 // import customerRepository from '../repositories/customer-repository.js';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../configs/custom-error.js';
+import { ContractDocumentRepository } from '../repositories/contract-document-repository.js';
+import { deletePhysicalFile } from '../utils/file-delete.js';
 import type {
   CreateContractDto,
   UpdateContractDto,
@@ -35,6 +37,8 @@ function getCarStatusFromContractStatus(contractStatus: ContractStatus): CarStat
       return 'contractProceeding';
   }
 }
+
+const documentRepository = new ContractDocumentRepository();
 
 const contractService = {
   /** -------------------------------------------------
@@ -138,10 +142,33 @@ const contractService = {
 
     // contractDocuments 처리 (파일 업로드 후 계약에 연결)
     if (dto.contractDocuments !== undefined) {
-      // 1. 먼저 기존 계약에 연결된 모든 문서의 contractId를 null로 초기화 (연결 해제)
+      // 1. 기존 계약에 연결된 문서 조회
+      const existingDocuments = await documentRepository.findByContractId(contractId);
+
+      // 2. 새로 선택한 문서 ID 목록
+      const newDocumentIds = dto.contractDocuments.map(doc => doc.id);
+
+      // 3. 제거될 문서 찾기 (기존 문서 중 새 목록에 없는 것)
+      const documentsToDelete = existingDocuments.filter(
+        doc => !newDocumentIds.includes(doc.id)
+      );
+
+      // 4. 제거될 문서들의 물리적 파일 삭제
+      for (const doc of documentsToDelete) {
+        await deletePhysicalFile(doc.filePath, 'raw');
+      }
+
+      // 5. 기존 계약에 연결된 모든 문서의 contractId를 null로 초기화 (연결 해제)
       await contractRepository.disconnectAllDocuments(contractId);
 
-      // 2. 새로 선택한 문서들만 현재 계약에 연결
+      // 6. 제거될 문서들 DB에서 완전 삭제
+      if (documentsToDelete.length > 0) {
+        await Promise.all(
+          documentsToDelete.map(doc => documentRepository.delete(doc.id))
+        );
+      }
+
+      // 7. 새로 선택한 문서들만 현재 계약에 연결
       if (dto.contractDocuments.length > 0) {
         await Promise.all(
           dto.contractDocuments.map(async (doc) => {
@@ -149,6 +176,8 @@ const contractService = {
           })
         );
       }
+
+      console.log(`✅ 계약 수정 시 ${documentsToDelete.length}개 문서 파일 삭제`);
     }
 
     // DTO → Input 변환
@@ -178,7 +207,7 @@ const contractService = {
   },
 
   /** -------------------------------------------------
-   * 🗑️ 계약 삭제
+   * 🗑️ 계약 삭제 (물리적 파일도 함께 삭제)
    * ------------------------------------------------- */
   async remove(user: AuthUser, contractId: number): Promise<{ message: string }> {
     const contract = await contractRepository.findById(contractId);
@@ -193,10 +222,19 @@ const contractService = {
     // 계약 삭제 전 차량 ID 저장
     const carId = contract.carId;
 
+    // 관련 문서들의 물리적 파일 삭제
+    const documents = await documentRepository.findByContractId(contractId);
+    for (const doc of documents) {
+      await deletePhysicalFile(doc.filePath, 'raw');
+    }
+
+    // DB에서 계약 삭제 (Cascade가 문서 레코드 자동 삭제)
     await contractRepository.delete(contractId);
 
     // 차량 상태를 'possession'으로 복원
     await carRepository.updateStatus(carId, 'possession');
+
+    console.log(`✅ 계약 삭제 완료 (ID: ${contractId}, 문서 ${documents.length}개 파일 정리)`);
 
     return { message: '계약 삭제 성공' };
   },

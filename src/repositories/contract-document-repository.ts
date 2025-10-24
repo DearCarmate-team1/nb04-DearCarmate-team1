@@ -104,4 +104,42 @@ export class ContractDocumentRepository {
       },
     });
   }
+
+  /**
+   * 특정 계약의 모든 문서 조회
+   */
+  async findByContractId(contractId: number) {
+    return await prisma.contractDocument.findMany({
+      where: { contractId },
+      select: {
+        id: true,
+        filePath: true, // 파일 URL
+        fileName: true,
+      },
+    });
+  }
+
+  /**
+   * 특정 계약들의 모든 문서 조회 (복수)
+   */
+  async findByContractIds(contractIds: number[]) {
+    return await prisma.contractDocument.findMany({
+      where: { contractId: { in: contractIds } },
+      select: {
+        id: true,
+        filePath: true,
+        fileName: true,
+      },
+    });
+  }
+
+  /**
+   * 문서 삭제 (DB 레코드만)
+   * 물리적 파일 삭제는 Service Layer에서 처리
+   */
+  async delete(id: number) {
+    return await prisma.contractDocument.delete({
+      where: { id },
+    });
+  }
 }

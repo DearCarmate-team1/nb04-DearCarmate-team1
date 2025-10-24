@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
+import path from 'path';
 import { ContractDocumentService } from '../services/contract-document-service';
 import contractService from '../services/contract-service.js';
+import { NODE_ENV } from '../configs/constants.js';
 
 export class ContractDocumentController {
   private service = new ContractDocumentService();
@@ -53,6 +55,14 @@ export class ContractDocumentController {
       const { contractDocumentId } = req.params;
       const file = await this.service.download(Number(contractDocumentId));
 
+      const isCloudinaryUrl = file.filePath.startsWith('https://res.cloudinary.com');
+
+      // 프로덕션: Cloudinary URL로 리다이렉트
+      if (NODE_ENV !== 'development' || isCloudinaryUrl) {
+        return res.redirect(file.filePath);
+      }
+
+      // 개발 환경: 로컬 파일 전송
       // 한글 파일명 인코딩 (RFC 5987)
       const encodedFileName = encodeURIComponent(file.fileName);
       res.setHeader(
@@ -61,19 +71,11 @@ export class ContractDocumentController {
       );
       res.setHeader('Content-Type', file.mimeType);
 
-      // URL인 경우 로컬 경로로 변환 (개발 환경)
-      const path = require('path');
-      let filePath = file.filePath;
+      // URL에서 로컬 경로 추출 후 디코딩 (한글 파일명 지원)
+      const url = new URL(file.filePath);
+      const decodedPathname = decodeURIComponent(url.pathname);
+      const absolutePath = path.resolve(process.cwd() + decodedPathname);
 
-      // URL 형식인 경우 파일 경로 추출
-      if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
-        // URL에서 pathname 추출 (예: /uploads/documents/xxx.pdf)
-        const url = new URL(filePath);
-        filePath = url.pathname;
-      }
-
-      // 절대 경로로 변환
-      const absolutePath = path.resolve(process.cwd() + filePath);
       return res.sendFile(absolutePath);
     } catch (error) {
       console.error('다운로드 에러:', error);

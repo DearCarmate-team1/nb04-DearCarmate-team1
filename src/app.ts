@@ -128,6 +128,11 @@ const shutdown = async (signal: string) => {
   if (isShuttingDown) return; // 🔥 이미 처리 중이면 무시
   isShuttingDown = true;
   console.log(`\n🛑 [${signal}] Gracefully shutting down...`);
+  
+  const forceExit = setTimeout(() => {
+    console.log('⏱️ Timeout reached. Force exiting...');
+    process.exit(1);
+  }, 5000);
 
   try {
     await prisma.$disconnect();

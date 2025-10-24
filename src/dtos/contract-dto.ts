@@ -54,6 +54,7 @@ export const updateContractSchema = z.object({
     .refine((val) => !isNaN(Date.parse(val)), {
       message: 'Invalid datetime format (ISO 8601 required).',
     })
+    .nullable()
     .optional(),
   contractPrice: z
     .number()

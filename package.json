@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/app.ts",
+    "dev:cloud": "NODE_ENV=production tsx watch --clear-screen=false src/app.ts",
     "build": "npm run clean && tsc",
     "start": "node dist/app.js",
     "clean": "rm -rf dist",
