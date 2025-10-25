@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { CustomerController } from '../controllers/customer-controller.js';
+import { customerController as controller } from '../controllers/customer-controller.js';
 import { authenticate } from '../middlewares/authenticate.js';
 import { uploadCsv } from '../configs/multer.js';
 import asyncHandler from '../configs/async-handler.js';
 
 const router = Router();
-const controller = new CustomerController();
 
 /**
  * @swagger

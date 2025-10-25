@@ -2,7 +2,7 @@ import contractRepository from '../repositories/contract-repository.js';
 import carRepository from '../repositories/car-repository.js';
 // import customerRepository from '../repositories/customer-repository.js';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../configs/custom-error.js';
-import { ContractDocumentRepository } from '../repositories/contract-document-repository.js';
+import contractDocumentRepository from '../repositories/contract-document-repository.js';
 import { deletePhysicalFile } from '../utils/file-delete.js';
 import type {
   CreateContractDto,
@@ -37,8 +37,6 @@ function getCarStatusFromContractStatus(contractStatus: ContractStatus): CarStat
       return 'contractProceeding';
   }
 }
-
-const documentRepository = new ContractDocumentRepository();
 
 const contractService = {
   /** -------------------------------------------------
@@ -143,7 +141,7 @@ const contractService = {
     // contractDocuments 처리 (파일 업로드 후 계약에 연결)
     if (dto.contractDocuments !== undefined) {
       // 1. 기존 계약에 연결된 문서 조회
-      const existingDocuments = await documentRepository.findByContractId(contractId);
+      const existingDocuments = await contractDocumentRepository.findByContractId(contractId);
 
       // 2. 새로 선택한 문서 ID 목록
       const newDocumentIds = dto.contractDocuments.map(doc => doc.id);
@@ -164,7 +162,7 @@ const contractService = {
       // 6. 제거될 문서들 DB에서 완전 삭제
       if (documentsToDelete.length > 0) {
         await Promise.all(
-          documentsToDelete.map(doc => documentRepository.delete(doc.id))
+          documentsToDelete.map((doc: any) => contractDocumentRepository.delete(doc.id))
         );
       }
 
@@ -223,7 +221,7 @@ const contractService = {
     const carId = contract.carId;
 
     // 관련 문서들의 물리적 파일 삭제
-    const documents = await documentRepository.findByContractId(contractId);
+    const documents = await contractDocumentRepository.findByContractId(contractId);
     for (const doc of documents) {
       await deletePhysicalFile(doc.filePath, 'raw');
     }

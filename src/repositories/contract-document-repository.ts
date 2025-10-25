@@ -8,94 +8,50 @@ interface FindAllParams {
   keyword?: string;
 }
 
-interface DocumentUploadData {
-  url: string;
-  fileName: string;
-  size: number;
-  mimeType: string;
-}
-
-export class ContractDocumentRepository {
-  // 계약서 목록 조회 (페이징 + 검색)
+const contractDocumentRepository = {
+  // 계약서 목록 조회
   async findAll({ page, pageSize, searchBy, keyword }: FindAllParams) {
     const where = searchBy && keyword ? { [searchBy]: { contains: keyword } } : {};
-
     const totalItemCount = await prisma.contractDocument.count({ where });
     const data = await prisma.contractDocument.findMany({
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {
-        contract: { // relation 포함
-          select: {
-            id: true,
-            contractPrice: true,
-            status: true,
-          },
-        },
+        contract: { select: { id: true, contractPrice: true, status: true } },
       },
     });
+    return { currentPage: page, totalPages: Math.ceil(totalItemCount / pageSize), totalItemCount, data };
+  },
 
-    return {
-      currentPage: page,
-      totalPages: Math.ceil(totalItemCount / pageSize),
-      totalItemCount,
-      data,
-    };
-  }
-
-  // 문서 등록용 계약 목록 조회 (문서가 없는 계약 성공 건)
+  // 문서 업로드용 계약 목록 조회
   async findDrafts() {
     const contracts = await prisma.contract.findMany({
-      where: {
-        status: "contractSuccessful", // 계약 성공 건만
-        documents: {
-          none: {}, // 문서가 0건인 계약만
-        },
-      },
+      where: { status: 'contractSuccessful', documents: { none: {} } },
       include: {
-        car: {
-          select: {
-            carNumber: true,
-            model: {
-              select: {
-                model: true
-              }
-            }
-          }
-        },
+        car: { select: { carNumber: true, model: { select: { model: true } } } },
         customer: { select: { name: true } },
       },
       orderBy: { id: 'desc' },
     });
+    return contracts.map(c => ({ id: c.id, data: `${c.car.model.model} - ${c.customer.name} 고객님` }));
+  },
 
-    // data 문자열 생성: 차량 모델 - 고객명
-    return contracts.map(c => ({
-      id: c.id,
-      data: `${c.car.model.model} - ${c.customer.name} 고객님`,
-    }));
-  }
-
-  /**
-   * 계약서 파일 저장 (contractId는 나중에 업데이트됨)
-   * @param uploadData - 업로드된 파일 정보 (URL, 파일명, 크기, MIME 타입)
-   * @returns 생성된 문서 ID
-   */
-  async saveFile(uploadData: DocumentUploadData) {
+  // 계약서 파일 저장
+  async saveFile(data: { url: string; fileName: string; size: number; mimeType: string }) {
     const document = await prisma.contractDocument.create({
       data: {
-        fileName: uploadData.fileName,
-        fileKey: uploadData.url, // URL을 고유 키로 사용
-        filePath: uploadData.url, // URL 저장
-        mimeType: uploadData.mimeType,
-        size: uploadData.size,
-        // contractId는 optional - 나중에 계약 업데이트 시 연결
+        fileName: data.fileName,
+        fileKey: data.fileName, // url 기반에서는 fileName을 key로 사용
+        filePath: data.url,
+        mimeType: data.mimeType,
+        size: data.size,
       },
     });
     return document.id;
-  }
+  },
 
-  // ID로 계약서 조회
+  // 계약서 ID 조회
   async findById(id: number) {
     return await prisma.contractDocument.findUnique({
       where: { id },
@@ -103,7 +59,7 @@ export class ContractDocumentRepository {
         contract: true,
       },
     });
-  }
+  },
 
   /**
    * 특정 계약의 모든 문서 조회
@@ -117,7 +73,7 @@ export class ContractDocumentRepository {
         fileName: true,
       },
     });
-  }
+  },
 
   /**
    * 특정 계약들의 모든 문서 조회 (복수)
@@ -131,7 +87,7 @@ export class ContractDocumentRepository {
         fileName: true,
       },
     });
-  }
+  },
 
   /**
    * 문서 삭제 (DB 레코드만)
@@ -141,5 +97,7 @@ export class ContractDocumentRepository {
     return await prisma.contractDocument.delete({
       where: { id },
     });
-  }
-}
+  },
+};
+
+export default contractDocumentRepository;

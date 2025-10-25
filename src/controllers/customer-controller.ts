@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
-import { CustomerService } from '../services/customer-service.js';
+import customerService from '../services/customer-service.js';
 
-const customerService = new CustomerService();
-
-export class CustomerController {
+export const customerController = {
   // 고객 등록
   async create(req: Request, res: Response) {
     try {
@@ -15,7 +13,7 @@ export class CustomerController {
       const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
       return res.status(400).json({ message });
     }
-  }
+  },
 
   // 고객 목록 조회 (검색 + 페이지네이션)
   async list(req: Request, res: Response) {
@@ -39,7 +37,7 @@ export class CustomerController {
       const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
       return res.status(400).json({ message });
     }
-  }
+  },
 
   // 고객 상세 조회
   async detail(req: Request, res: Response) {
@@ -54,7 +52,7 @@ export class CustomerController {
       const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
       return res.status(404).json({ message });
     }
-  }
+  },
 
   // 고객 수정
   async update(req: Request, res: Response) {
@@ -69,7 +67,7 @@ export class CustomerController {
       const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
       return res.status(400).json({ message });
     }
-  }
+  },
 
   // 고객 삭제
   async delete(req: Request, res: Response) {
@@ -84,7 +82,7 @@ export class CustomerController {
       const message = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
       return res.status(400).json({ message });
     }
-  }
+  },
 
   /** 📤 고객 CSV 대용량 업로드 (메모리 기반 - 디스크 저장 안 함) */
   async bulkUpload(req: Request, res: Response): Promise<void> {
@@ -104,5 +102,5 @@ export class CustomerController {
         successCount: result.successCount,
       });
     }
-  }
-}
+  },
+};

@@ -1,17 +1,16 @@
 import { decodeFileName } from '../configs/multer.js';
-import { ContractDocumentRepository } from '../repositories/contract-document-repository.js';
+import contractDocumentRepository from '../repositories/contract-document-repository.js';
 import { uploadFile } from '../utils/file-storage.js';
 
-export class ContractDocumentService {
-  private repository = new ContractDocumentRepository();
+const contractDocumentService = {
 
   async list(params: { page: number; pageSize: number; searchBy?: string; keyword?: string }) {
-    return await this.repository.findAll(params);
-  }
+    return await contractDocumentRepository.findAll(params);
+  },
 
   async draftList() {
-    return await this.repository.findDrafts();
-  }
+    return await contractDocumentRepository.findDrafts();
+  },
 
   /**
    * 문서 업로드 처리 (환경별 분기)
@@ -31,17 +30,19 @@ export class ContractDocumentService {
     });
 
     // DB에 메타데이터 저장
-    return await this.repository.saveFile({
+    return await contractDocumentRepository.saveFile({
       url,
       fileName,
       size: file.size,
       mimeType: file.mimetype,
     });
-  }
+  },
 
   async download(id: number) {
-    const file = await this.repository.findById(id);
+    const file = await contractDocumentRepository.findById(id);
     if (!file) throw new Error('파일을 찾을 수 없습니다');
     return file;
-  }
-}
+  },
+};
+
+export default contractDocumentService;

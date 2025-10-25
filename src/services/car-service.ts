@@ -17,11 +17,9 @@ import type {
 import { CarMapper } from '../mappers/car-mapper.js';
 import { csvParser } from '../utils/csv-parser.js';
 import type { AuthUser } from '../types/auth-user.js';
-import { ContractDocumentRepository } from '../repositories/contract-document-repository.js';
+import contractDocumentRepository from '../repositories/contract-document-repository.js';
 import { deletePhysicalFile } from '../utils/file-delete.js';
 import prisma from '../configs/prisma-client.js';
-
-const documentRepository = new ContractDocumentRepository();
 
 const carService = {
   // 🚗 차량 등록
@@ -116,7 +114,7 @@ const carService = {
 
     // 계약들의 문서 파일 삭제
     if (contractIds.length > 0) {
-      const documents = await documentRepository.findByContractIds(contractIds);
+      const documents = await contractDocumentRepository.findByContractIds(contractIds);
 
       for (const doc of documents) {
         await deletePhysicalFile(doc.filePath, 'raw');
