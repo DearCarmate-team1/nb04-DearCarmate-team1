@@ -280,13 +280,6 @@ const contractRepository = {
       orderBy: { id: 'desc' },
     });
   },
-  // 고객 임시 .. 수정필요//
-  // 고객 상세 조회
-  async customerFindById(customerId: number) {
-    return prisma.customer.findUnique({
-      where: { id: customerId },
-    });
-  },
 
   /** -------------------------------------------------
    * 📁 계약 문서 업데이트 (contractId 연결)

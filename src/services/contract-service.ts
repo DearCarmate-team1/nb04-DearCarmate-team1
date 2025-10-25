@@ -1,6 +1,6 @@
 import contractRepository from '../repositories/contract-repository.js';
 import carRepository from '../repositories/car-repository.js';
-// import customerRepository from '../repositories/customer-repository.js';
+import customerRepository from '../repositories/customer-repository.js';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../configs/custom-error.js';
 import contractDocumentRepository from '../repositories/contract-document-repository.js';
 import { deletePhysicalFile } from '../utils/file-delete.js';
@@ -49,10 +49,8 @@ const contractService = {
     if (car.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
 
     // 고객 존재 및 권한 검증
-    // const customer = await customerRepository.findById(dto.customerId); // 리팩토링 필요
-    const customer = await contractRepository.customerFindById(dto.customerId);
+    const customer = await customerRepository.findById(user.companyId, dto.customerId);
     if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
-    if (customer.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
 
     // contractPrice는 차량 가격으로 자동 설정
     const contractPrice = car.price;
@@ -132,10 +130,8 @@ const contractService = {
     }
 
     if (dto.customerId && dto.customerId !== contract.customerId) {
-    //   const customer = await customerRepository.findById(dto.customerId); // 리팩토링 필요
-      const customer = await contractRepository.customerFindById(dto.customerId);
+      const customer = await customerRepository.findById(user.companyId, dto.customerId);
       if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
-      if (customer.companyId !== user.companyId) throw new ForbiddenError('권한이 없습니다.');
     }
 
     // contractDocuments 처리 (파일 업로드 후 계약에 연결)
