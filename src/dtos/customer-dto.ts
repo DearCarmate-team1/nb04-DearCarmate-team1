@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // 성별 enum
-export const genderSchema = z.enum(['남성', '여성', '기타'], {
+export const genderSchema = z.enum(['male', 'female'], {
   message: '유효한 성별을 선택하세요.',
 });
 
