@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import customerService from '../services/customer-service.js';
 
-export const customerController = {
+const customerController = {
   // 고객 등록
   async create(req: Request, res: Response): Promise<void> {
     const companyId = req.user.companyId;
@@ -72,3 +72,5 @@ export const customerController = {
     }
   },
 };
+
+export default customerController;

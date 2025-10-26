@@ -17,8 +17,7 @@ import type {
 import { CarMapper } from '../mappers/car-mapper.js';
 import { csvParser } from '../utils/csv-parser.js';
 import type { AuthUser } from '../types/auth-user.js';
-import contractDocumentRepository from '../repositories/contract-document-repository.js';
-import { deletePhysicalFile } from '../utils/file-delete.js';
+import { cleanupContractDocuments } from '../utils/contract-cleanup.js';
 import prisma from '../configs/prisma-client.js';
 
 const carService = {
@@ -110,18 +109,9 @@ const carService = {
       where: { carId, companyId: user.companyId },
       select: { id: true },
     });
-    const contractIds = contracts.map((c) => c.id);
 
     // 계약들의 문서 파일 삭제
-    if (contractIds.length > 0) {
-      const documents = await contractDocumentRepository.findByContractIds(contractIds);
-
-      for (const doc of documents) {
-        await deletePhysicalFile(doc.filePath, 'raw');
-      }
-
-      console.log(`✅ 차량 삭제 시 ${documents.length}개 문서 파일 정리`);
-    }
+    await cleanupContractDocuments(contracts.map((c) => c.id));
 
     // DB에서 차량 삭제 (Cascade가 계약 및 문서 레코드 자동 삭제)
     await carRepository.delete(carId);

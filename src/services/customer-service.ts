@@ -1,12 +1,11 @@
 // src/services/customer-service.ts
 import { CreateCustomerDTO, UpdateCustomerDTO } from '../dtos/customer-dto.js';
 import customerRepository from '../repositories/customer-repository.js';
-import contractDocumentRepository from '../repositories/contract-document-repository.js';
 import { csvParser } from '../utils/csv-parser.js';
-import { BadRequestError } from '../configs/custom-error.js';
+import { BadRequestError, NotFoundError } from '../configs/custom-error.js';
 import type { CustomerCsvRow, CustomerBulkUploadResult } from '../types/customer.js';
 import type { AuthUser } from '../types/auth-user.js';
-import { deletePhysicalFile } from '../utils/file-delete.js';
+import { cleanupContractDocuments } from '../utils/contract-cleanup.js';
 import prisma from '../configs/prisma-client.js';
 
 const customerService = {
@@ -43,37 +42,30 @@ const customerService = {
   // 고객 상세 조회
   async getCustomerById(companyId: number, customerId: number) {
     const customer = await customerRepository.findById(companyId, customerId);
-    if (!customer) throw new Error('고객을 찾을 수 없습니다.');
+    if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
     return customer;
   },
 
   // 고객 정보 수정
   async updateCustomer(companyId: number, customerId: number, data: UpdateCustomerDTO) {
-    await customerService.getCustomerById(companyId, customerId);
+    const customer = await customerRepository.findById(companyId, customerId);
+    if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
     return await customerRepository.update(customerId, data);
   },
 
   // 고객 삭제 (관련 계약 문서들의 물리적 파일도 함께 삭제)
   async deleteCustomer(companyId: number, customerId: number) {
-    await customerService.getCustomerById(companyId, customerId);
+    const customer = await customerRepository.findById(companyId, customerId);
+    if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
 
     // 고객과 연결된 모든 계약 ID 조회
     const contracts = await prisma.contract.findMany({
       where: { customerId, companyId },
       select: { id: true },
     });
-    const contractIds = contracts.map((c) => c.id);
 
     // 계약들의 문서 파일 삭제
-    if (contractIds.length > 0) {
-      const documents = await contractDocumentRepository.findByContractIds(contractIds);
-
-      for (const doc of documents) {
-        await deletePhysicalFile(doc.filePath, 'raw');
-      }
-
-      console.log(`✅ 고객 삭제 시 ${documents.length}개 문서 파일 정리`);
-    }
+    await cleanupContractDocuments(contracts.map((c) => c.id));
 
     // DB에서 고객 삭제 (Cascade가 계약 및 문서 레코드 자동 삭제)
     return await customerRepository.delete(customerId);

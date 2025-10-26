@@ -4,6 +4,8 @@ import customerRepository from '../repositories/customer-repository.js';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../configs/custom-error.js';
 import contractDocumentRepository from '../repositories/contract-document-repository.js';
 import { deletePhysicalFile } from '../utils/file-delete.js';
+import { cleanupContractDocuments } from '../utils/contract-cleanup.js';
+import prisma from '../configs/prisma-client.js';
 import type {
   CreateContractDto,
   UpdateContractDto,
@@ -20,22 +22,31 @@ import { ContractMapper } from '../mappers/contract-mapper.js';
 import type { ContractStatus, CarStatus } from '@prisma/client';
 import type { AuthUser } from '../types/auth-user.js';
 
+/** -------------------------------------------------
+ * 🎯 계약 상태 상수 그룹
+ * ------------------------------------------------- */
+const IN_PROGRESS_STATUSES: ContractStatus[] = [
+  'carInspection',
+  'priceNegotiation',
+  'contractDraft',
+];
+const SUCCESS_STATUS: ContractStatus = 'contractSuccessful';
+const FAILED_STATUS: ContractStatus = 'contractFailed';
+
 /**
  * 계약 상태에 따른 차량 상태 결정
  */
 function getCarStatusFromContractStatus(contractStatus: ContractStatus): CarStatus {
-  switch (contractStatus) {
-    case 'carInspection':
-    case 'priceNegotiation':
-    case 'contractDraft':
-      return 'contractProceeding';
-    case 'contractSuccessful':
-      return 'contractCompleted';
-    case 'contractFailed':
-      return 'possession';
-    default:
-      return 'contractProceeding';
+  if (IN_PROGRESS_STATUSES.includes(contractStatus)) {
+    return 'contractProceeding';
   }
+  if (contractStatus === SUCCESS_STATUS) {
+    return 'contractCompleted';
+  }
+  if (contractStatus === FAILED_STATUS) {
+    return 'possession';
+  }
+  return 'contractProceeding'; // fallback
 }
 
 const contractService = {
@@ -118,6 +129,29 @@ const contractService = {
       throw new ForbiddenError('담당자만 수정이 가능합니다.');
     }
 
+    const oldStatus = contract.status;
+    const newStatus = dto.status;
+
+    // ============================================
+    // 🚫 실패 → 성공 직행 금지
+    // ============================================
+    if (newStatus && oldStatus === FAILED_STATUS && newStatus === SUCCESS_STATUS) {
+      throw new BadRequestError('실패한 계약은 성공 상태로 직접 변경할 수 없습니다.');
+    }
+
+    // ============================================
+    // 🚗 차량 상태 검증 (실패 → 진행중으로 변경 시만)
+    // ============================================
+    // 완료 → 진행중은 같은 계약의 차량을 재사용하므로 검증 불필요
+    if (newStatus && oldStatus === FAILED_STATUS && IN_PROGRESS_STATUSES.includes(newStatus)) {
+      const car = await carRepository.findById(contract.carId);
+      if (!car) throw new NotFoundError('차량을 찾을 수 없습니다.');
+
+      if (car.status !== 'possession') {
+        throw new BadRequestError('해당 차량은 현재 사용할 수 없습니다 (이미 계약 진행 중이거나 완료됨)');
+      }
+    }
+
     // 차량 변경 여부 확인
     const isCarChanged = dto.carId !== undefined && dto.carId !== contract.carId;
     const oldCarId = contract.carId;
@@ -132,6 +166,27 @@ const contractService = {
     if (dto.customerId && dto.customerId !== contract.customerId) {
       const customer = await customerRepository.findById(user.companyId, dto.customerId);
       if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
+    }
+
+    // ============================================
+    // 📁 계약서 물리 삭제 (완료 → 다른 상태)
+    // ============================================
+    if (newStatus && oldStatus === SUCCESS_STATUS && newStatus !== SUCCESS_STATUS) {
+      const existingDocuments = await contractDocumentRepository.findByContractId(contractId);
+
+      if (existingDocuments.length > 0) {
+        // 1. 물리 파일 삭제
+        for (const doc of existingDocuments) {
+          await deletePhysicalFile(doc.filePath, 'raw');
+        }
+
+        // 2. DB에서 문서 삭제
+        await Promise.all(
+          existingDocuments.map((doc: any) => contractDocumentRepository.delete(doc.id))
+        );
+
+        console.log(`✅ 계약 상태 변경(완료→${newStatus}) - ${existingDocuments.length}개 문서 파일 삭제`);
+      }
     }
 
     // contractDocuments 처리 (파일 업로드 후 계약에 연결)
@@ -177,23 +232,27 @@ const contractService = {
     // DTO → Input 변환
     const updateInput = ContractMapper.fromUpdateDto(dto);
 
-    // 계약 수정
-    const updated = await contractRepository.update(contractId, updateInput);
+    // ============================================
+    // 🔄 트랜잭션: 계약 + 차량 상태 동시 업데이트
+    // ============================================
+    const updated = await prisma.$transaction(async (tx) => {
+      // 1. 계약 수정 (Repository 위임)
+      const updatedContract = await contractRepository.update(contractId, updateInput, tx);
 
-    // 차량 상태 업데이트
-    // 1. 차량이 변경된 경우
-    if (isCarChanged) {
-      // 기존 차량을 possession으로 복원
-      await carRepository.updateStatus(oldCarId, 'possession');
-      // 새 차량을 현재 계약 상태에 맞게 변경
-      const newCarStatus = getCarStatusFromContractStatus(updated.status);
-      await carRepository.updateStatus(updated.carId, newCarStatus);
-    }
-    // 2. 차량은 그대로인데 계약 상태만 변경된 경우
-    else if (dto.status) {
-      const carStatus = getCarStatusFromContractStatus(dto.status);
-      await carRepository.updateStatus(updated.carId, carStatus);
-    }
+      // 2. 차량 상태 업데이트 (Repository 위임)
+      if (isCarChanged) {
+        // 차량이 변경된 경우: 기존 차량 복원 + 새 차량 변경
+        await carRepository.updateStatus(oldCarId, 'possession', tx);
+        const newCarStatus = getCarStatusFromContractStatus(updatedContract.status);
+        await carRepository.updateStatus(updatedContract.carId, newCarStatus, tx);
+      } else if (newStatus) {
+        // 차량은 그대로, 계약 상태만 변경된 경우
+        const carStatus = getCarStatusFromContractStatus(newStatus);
+        await carRepository.updateStatus(updatedContract.carId, carStatus, tx);
+      }
+
+      return updatedContract;
+    });
 
     // Entity 변환 후 응답
     const entity = ContractMapper.fromPrisma(updated);
@@ -217,18 +276,13 @@ const contractService = {
     const carId = contract.carId;
 
     // 관련 문서들의 물리적 파일 삭제
-    const documents = await contractDocumentRepository.findByContractId(contractId);
-    for (const doc of documents) {
-      await deletePhysicalFile(doc.filePath, 'raw');
-    }
+    await cleanupContractDocuments([contractId]);
 
     // DB에서 계약 삭제 (Cascade가 문서 레코드 자동 삭제)
     await contractRepository.delete(contractId);
 
     // 차량 상태를 'possession'으로 복원
     await carRepository.updateStatus(carId, 'possession');
-
-    console.log(`✅ 계약 삭제 완료 (ID: ${contractId}, 문서 ${documents.length}개 파일 정리)`);
 
     return { message: '계약 삭제 성공' };
   },
