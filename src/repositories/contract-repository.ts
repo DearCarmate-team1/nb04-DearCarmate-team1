@@ -91,34 +91,34 @@ const contractRepository = {
   async update(
     id: number,
     data: ContractUpdateInput,
+    tx?: Prisma.TransactionClient,
   ): Promise<Prisma.ContractGetPayload<{ include: typeof CONTRACT_INCLUDE }>> {
-    // meetings 업데이트가 있는 경우 트랜잭션으로 처리
+    // meetings 업데이트가 있는 경우
     if (data.meetings) {
-      return prisma.$transaction(async (tx) => {
+      const executeUpdate = async (client: Prisma.TransactionClient) => {
         // 1. 기존 미팅과 연결된 알림 먼저 삭제
-        const existingMeetings = await tx.meeting.findMany({
+        const existingMeetings = await client.meeting.findMany({
           where: { contractId: id },
           select: { id: true },
         });
 
         if (existingMeetings.length > 0) {
           const meetingIds = existingMeetings.map((m) => m.id);
-          await tx.notification.deleteMany({
+          await client.notification.deleteMany({
             where: { meetingId: { in: meetingIds } },
           });
 
           // 2. 기존 미팅 삭제
-          await tx.meeting.deleteMany({
+          await client.meeting.deleteMany({
             where: { contractId: id },
           });
         }
 
         // 3. 계약 업데이트 (새 미팅 생성 포함)
-        // deleteMany는 이미 처리했으므로 제거
         const { meetings, ...restData } = data;
         const meetingsCreate = meetings as any;
 
-        return tx.contract.update({
+        return client.contract.update({
           where: { id },
           data: {
             ...restData,
@@ -128,11 +128,19 @@ const contractRepository = {
           },
           include: CONTRACT_INCLUDE,
         });
-      });
+      };
+
+      // tx가 전달되면 그대로 사용, 없으면 새 트랜잭션 생성
+      if (tx) {
+        return executeUpdate(tx);
+      } else {
+        return prisma.$transaction(executeUpdate);
+      }
     }
 
     // meetings 업데이트가 없으면 일반 업데이트
-    return prisma.contract.update({
+    const client = tx ?? prisma;
+    return client.contract.update({
       where: { id },
       data,
       include: CONTRACT_INCLUDE,

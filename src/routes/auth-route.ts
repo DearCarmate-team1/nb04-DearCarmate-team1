@@ -43,9 +43,9 @@ const router = Router();
  *                 refreshToken:
  *                   type: string
  *       400:
- *         description: 잘못된 요청 (예: 이메일 형식 오류)
+ *         description: "잘못된 요청 (예: 이메일 형식 오류)"
  *       401:
- *         description: 인증 실패 (예: 비밀번호 불일치)
+ *         description: "인증 실패 (예: 비밀번호 불일치)"
  */
 router.post('/login', validate(loginSchema, 'body'), asyncHandler(authController.login));
 
