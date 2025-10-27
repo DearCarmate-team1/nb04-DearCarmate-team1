@@ -1,11 +1,16 @@
 import { Router } from 'express';
-import { CustomerController } from '../controllers/customer-controller.js';
+import customerController from '../controllers/customer-controller.js';
 import { authenticate } from '../middlewares/authenticate.js';
+import { validate } from '../middlewares/validate.js';
 import { uploadCsv } from '../configs/multer.js';
 import asyncHandler from '../configs/async-handler.js';
+import {
+  createCustomerSchema,
+  updateCustomerSchema,
+  customerIdParamSchema,
+} from '../dtos/customer-dto.js';
 
 const router = Router();
-const controller = new CustomerController();
 
 /**
  * @swagger
@@ -78,7 +83,7 @@ const controller = new CustomerController();
  *             schema:
  *               $ref: '#/components/schemas/CustomerResponse'
  */
-router.post('/', authenticate, asyncHandler(controller.create.bind(controller)));
+router.post('/', authenticate, validate(createCustomerSchema, 'body'), asyncHandler(customerController.create));
 
 /**
  * @swagger
@@ -127,7 +132,7 @@ router.post('/', authenticate, asyncHandler(controller.create.bind(controller)))
  *                 totalPages:
  *                   type: integer
  */
-router.get('/', authenticate, asyncHandler(controller.list.bind(controller)));
+router.get('/', authenticate, asyncHandler(customerController.list));
 
 /**
  * @swagger
@@ -153,7 +158,7 @@ router.get('/', authenticate, asyncHandler(controller.list.bind(controller)));
  *       404:
  *         description: 고객을 찾을 수 없음
  */
-router.get('/:customerId', authenticate, asyncHandler(controller.detail.bind(controller)));
+router.get('/:customerId', authenticate, validate(customerIdParamSchema, 'params'), asyncHandler(customerController.detail));
 
 /**
  * @swagger
@@ -200,7 +205,7 @@ router.get('/:customerId', authenticate, asyncHandler(controller.detail.bind(con
  *       404:
  *         description: 고객을 찾을 수 없음
  */
-router.patch('/:customerId', authenticate, asyncHandler(controller.update.bind(controller)));
+router.patch('/:customerId', authenticate, validate(customerIdParamSchema, 'params'), validate(updateCustomerSchema, 'body'), asyncHandler(customerController.update));
 
 /**
  * @swagger
@@ -222,7 +227,7 @@ router.patch('/:customerId', authenticate, asyncHandler(controller.update.bind(c
  *       404:
  *         description: 고객을 찾을 수 없음
  */
-router.delete('/:customerId', authenticate, asyncHandler(controller.delete.bind(controller)));
+router.delete('/:customerId', authenticate, validate(customerIdParamSchema, 'params'), asyncHandler(customerController.delete));
 
 /**
  * @swagger
@@ -262,7 +267,7 @@ router.post(
   '/upload',
   authenticate,
   uploadCsv.single('file'),
-  asyncHandler(controller.bulkUpload.bind(controller)),
+  asyncHandler(customerController.bulkUpload),
 );
 
 export default router;

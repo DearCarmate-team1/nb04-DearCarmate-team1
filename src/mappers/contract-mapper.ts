@@ -299,7 +299,9 @@ export const ContractMapper = {
 
     if (dto.status !== undefined) input.status = dto.status;
     if (dto.contractPrice !== undefined) input.contractPrice = dto.contractPrice;
-    if (dto.resolutionDate !== undefined) input.resolutionDate = new Date(dto.resolutionDate);
+    if (dto.resolutionDate !== undefined && dto.resolutionDate !== null) {
+      input.resolutionDate = new Date(dto.resolutionDate);
+    }
     if (dto.carId !== undefined) input.carId = dto.carId;
     if (dto.userId !== undefined) input.userId = dto.userId;
     if (dto.customerId !== undefined) input.customerId = dto.customerId;

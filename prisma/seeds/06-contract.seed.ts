@@ -69,23 +69,21 @@ export async function seed() {
       'contractFailed',
     ];
 
-    // 각 상태별로 생성할 계약 개수 계산 (차량 개수를 5로 나눔)
-    const contractsPerStatus = Math.floor(cars.length / contractStatuses.length);
-    const remainingCars = cars.length % contractStatuses.length;
+    // 각 상태별로 생성할 계약 개수 계산 (차량 개수를 5로 나눔, 최대 6개로 제한)
+    const contractsPerStatus = Math.min(6, Math.floor(cars.length / contractStatuses.length));
+    const totalContractsToCreate = contractsPerStatus * contractStatuses.length;
+    const unusedCars = cars.length - totalContractsToCreate;
 
     console.log(
-      `  📊 차량 ${cars.length}대 → 상태별 ${contractsPerStatus}개씩 생성 (나머지 ${remainingCars}대)`,
+      `  📊 차량 ${cars.length}대 → 계약 ${totalContractsToCreate}개 생성 (각 상태별 ${contractsPerStatus}개, 미사용 ${unusedCars}대)`,
     );
 
     let carIndex = 0; // 차량 인덱스 (순차 할당)
 
     for (let statusIdx = 0; statusIdx < contractStatuses.length; statusIdx++) {
       const status = contractStatuses[statusIdx];
-      // 마지막 상태에는 나머지 차량도 포함
-      const count =
-        statusIdx === contractStatuses.length - 1
-          ? contractsPerStatus + remainingCars
-          : contractsPerStatus;
+      // 각 상태별로 동일하게 contractsPerStatus개씩 생성 (최대 6개)
+      const count = contractsPerStatus;
 
       for (let i = 0; i < count; i++) {
         if (carIndex >= cars.length) break;

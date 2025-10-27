@@ -7,6 +7,7 @@ import {
   BadRequestError,
   NotFoundError,
 } from '../configs/custom-error.js';
+import { deletePhysicalFile } from '../utils/file-delete.js';
 
 const userService = {
   async createUser(userData: CreateUserDto) {
@@ -108,6 +109,15 @@ const userService = {
     // 3. 새로운 비밀번호가 있다면 해싱
     if (password) {
       dataToUpdate.password = await bcrypt.hash(password, 10);
+    }
+
+    // 3.5. 프로필 이미지 변경 시 기존 이미지 삭제
+    const isImageUrlUpdating = dataToUpdate.imageUrl !== undefined;
+    const hasExistingImage = existingUser.imageUrl !== null;
+    const isImageUrlChanged = dataToUpdate.imageUrl !== existingUser.imageUrl;
+
+    if (isImageUrlUpdating && hasExistingImage && isImageUrlChanged && existingUser.imageUrl) {
+      await deletePhysicalFile(existingUser.imageUrl, 'image');
     }
 
     // 4. 정보 업데이트

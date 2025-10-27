@@ -58,8 +58,9 @@ const carRepository = {
     await prisma.car.delete({ where: { id } });
   },
 
-  async updateStatus(id: number, status: CarStatus) {
-    return prisma.car.update({
+  async updateStatus(id: number, status: CarStatus, tx?: Prisma.TransactionClient) {
+    const client = tx ?? prisma;
+    return client.car.update({
       where: { id },
       data: { status },
       include: { model: true },
