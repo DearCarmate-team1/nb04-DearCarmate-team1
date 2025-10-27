@@ -9,6 +9,7 @@ import {
   getUsersByCompanySchema,
 } from '../dtos/company-dto.js';
 import { authenticate } from '../middlewares/authenticate.js';
+import { isAdmin } from '../middlewares/authorize.js';
 import { validate } from '../middlewares/validate.js';
 
 const router = Router();
@@ -82,6 +83,7 @@ const router = Router();
 router.post(
   '/',
   authenticate,
+  isAdmin,
   validate(createCompanySchema, 'body'),
   asyncHandler(companyController.create),
 );
@@ -238,6 +240,7 @@ router.get(
 router.patch(
   '/:companyId',
   authenticate,
+  isAdmin,
   validate(companyIdParamsSchema, 'params'),
   validate(updateCompanySchema, 'body'),
   asyncHandler(companyController.update),
@@ -269,6 +272,7 @@ router.patch(
 router.delete(
   '/:companyId',
   authenticate,
+  isAdmin,
   validate(companyIdParamsSchema, 'params'),
   asyncHandler(companyController.delete),
 );
