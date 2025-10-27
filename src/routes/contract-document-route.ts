@@ -6,7 +6,6 @@ import asyncHandler from '../configs/async-handler.js';
 
 const router = Router();
 
-
 router.get("/", authenticate, asyncHandler(controller.list));
 
 router.get("/draft", authenticate, asyncHandler(controller.draftList));
@@ -18,6 +17,13 @@ router.post(
   asyncHandler(controller.upload)
 );
 
+// 토큰 기반 다운로드 (이메일 링크용 - 인증 불필요)
+router.get(
+  "/download",
+  asyncHandler(controller.downloadWithToken)
+);
+
+// 인증 필요한 다운로드 (기존)
 router.get(
   "/:contractDocumentId/download",
   authenticate,

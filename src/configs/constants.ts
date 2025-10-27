@@ -29,3 +29,10 @@ export const CLOUDINARY_API_SECRET = getEnvVar('CLOUDINARY_API_SECRET');
 
 // 📁 File Upload
 export const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+
+// 📧 Email (SendGrid)
+export const SENDGRID_API_KEY = getEnvVar('SENDGRID_API_KEY');
+export const EMAIL_FROM = process.env.EMAIL_FROM || 'Dear Carmate <noreply@dearcarmate.com>';
+
+// 🔐 Download Token
+export const DOWNLOAD_TOKEN_SECRET = process.env.DOWNLOAD_TOKEN_SECRET || 'your-download-token-secret-key';
