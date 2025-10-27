@@ -91,34 +91,34 @@ const contractRepository = {
   async update(
     id: number,
     data: ContractUpdateInput,
-    tx?: Prisma.TransactionClient,
   ): Promise<Prisma.ContractGetPayload<{ include: typeof CONTRACT_INCLUDE }>> {
-    // meetings 업데이트가 있는 경우
+    // meetings 업데이트가 있는 경우 트랜잭션으로 처리
     if (data.meetings) {
-      const executeUpdate = async (client: Prisma.TransactionClient) => {
+      return prisma.$transaction(async (tx) => {
         // 1. 기존 미팅과 연결된 알림 먼저 삭제
-        const existingMeetings = await client.meeting.findMany({
+        const existingMeetings = await tx.meeting.findMany({
           where: { contractId: id },
           select: { id: true },
         });
 
         if (existingMeetings.length > 0) {
           const meetingIds = existingMeetings.map((m) => m.id);
-          await client.notification.deleteMany({
+          await tx.notification.deleteMany({
             where: { meetingId: { in: meetingIds } },
           });
 
           // 2. 기존 미팅 삭제
-          await client.meeting.deleteMany({
+          await tx.meeting.deleteMany({
             where: { contractId: id },
           });
         }
 
         // 3. 계약 업데이트 (새 미팅 생성 포함)
+        // deleteMany는 이미 처리했으므로 제거
         const { meetings, ...restData } = data;
         const meetingsCreate = meetings as any;
 
-        return client.contract.update({
+        return tx.contract.update({
           where: { id },
           data: {
             ...restData,
@@ -128,19 +128,11 @@ const contractRepository = {
           },
           include: CONTRACT_INCLUDE,
         });
-      };
-
-      // tx가 전달되면 그대로 사용, 없으면 새 트랜잭션 생성
-      if (tx) {
-        return executeUpdate(tx);
-      } else {
-        return prisma.$transaction(executeUpdate);
-      }
+      });
     }
 
     // meetings 업데이트가 없으면 일반 업데이트
-    const client = tx ?? prisma;
-    return client.contract.update({
+    return prisma.contract.update({
       where: { id },
       data,
       include: CONTRACT_INCLUDE,
@@ -286,6 +278,13 @@ const contractRepository = {
         },
       },
       orderBy: { id: 'desc' },
+    });
+  },
+  // 고객 임시 .. 수정필요//
+  // 고객 상세 조회
+  async customerFindById(customerId: number) {
+    return prisma.customer.findUnique({
+      where: { id: customerId },
     });
   },
 

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     // Basics
-    "module": "nodenext", // nodenext
-    "target": "es2024", // es2024
+    "module": "nodenext",
+    "target": "es2024",
     "lib": ["esnext"],
     "types": ["node"], // install -D @types/node
 
@@ -10,6 +10,7 @@
     "baseUrl": "./",
     "rootDir": "./src",
     "outDir": "./dist",
+
 
     // Other Outputs
     "sourceMap": true,
@@ -20,6 +21,7 @@
     // Decorators
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,

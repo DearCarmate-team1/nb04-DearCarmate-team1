@@ -57,7 +57,7 @@ export async function seed() {
   const usedCarNumbers = new Set<string>();
 
   for (const company of companies) {
-    const numCars = Math.floor(Math.random() * 6) + 35; // 회사별 35~40대
+    const numCars = Math.floor(Math.random() * 11) + 25; // 회사별 25~35대
     console.log(`🏢 ${company.name} (${company.authCode}) → ${numCars}대 생성`);
 
     for (let i = 0; i < numCars; i++) {

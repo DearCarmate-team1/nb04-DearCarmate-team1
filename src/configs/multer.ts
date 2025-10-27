@@ -14,21 +14,16 @@ export function decodeFileName(originalName: string): string {
 }
 
 /**
- * 디코딩된 파일명으로 안전한 파일명 생성
- * - 파일 시스템 금지 문자만 제거 (한글, 괄호 등 유지)
+ * 타임스탬프 기반 안전한 파일명 생성
+ * - 한글 파일명 디코딩
+ * - 특수문자 제거 (알파벳, 숫자, 한글, 공백, .-_ 만 허용)
  * - 타임스탬프 추가로 중복 방지
- * @param decodedName - UTF-8로 디코딩된 파일명
- * @returns 타임스탬프가 포함된 안전한 파일명
  */
-export function generateSafeFileNameFromDecoded(decodedName: string): string {
-  const ext = path.extname(decodedName);
-  const basename = path.basename(decodedName, ext);
-
-  // 파일 시스템 금지 문자만 제거: < > : " / \ | ? * 및 제어문자
-  const sanitized = basename.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim();
-
+export function generateSafeFileName(originalName: string): string {
+  const decoded = decodeFileName(originalName);
   const timestamp = Date.now();
-  return `${timestamp}_${sanitized}${ext}`;
+  const sanitized = decoded.replace(/[^a-zA-Z0-9가-힣.\s_-]/g, '_');
+  return `${timestamp}_${sanitized}`;
 }
 
 // ========================================
