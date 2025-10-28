@@ -8,8 +8,8 @@ export const createUserSchema = z
     phoneNumber: z.string().min(1, '전화번호는 필수입니다.'),
     password: z.string().min(8, '비밀번호는 8자 이상이어야 합니다.'),
     passwordConfirmation: z.string(),
-    company: z.string().min(1, '회사 이름은 필수입니다.'),
-    companyCode: z.string().length(6, '회사 코드는 6자리여야 합니다.'),
+    companyName: z.string().min(1, '회사 이름은 필수입니다.'),
+    companyCode: z.string().min(1, '회사 코드는 필수입니다.'),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
     message: '비밀번호와 비밀번호 확인이 일치하지 않습니다.',
@@ -30,7 +30,6 @@ export const updateUserSchema = z
     path: ['passwordConfirmation'],
   });
 
-// 스키마에서 타입 추론 (DTO 역할)
 export type CreateUserDto = z.infer<typeof createUserSchema>;
 
 export interface UpdateUserDto {

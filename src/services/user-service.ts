@@ -7,8 +7,10 @@ import {
   BadRequestError,
   NotFoundError,
 } from '../configs/custom-error.js';
+import { deletePhysicalFile } from '../utils/file-delete.js';
 
 const userService = {
+  /** 유저 생성 */
   async createUser(userData: CreateUserDto) {
     // 2. 이메일 중복 확인
     const existingUser = await userRepository.findByEmail(userData.email);
@@ -18,7 +20,7 @@ const userService = {
 
     // 3. 회사 정보 검증
     const company = await companyRepository.findByNameAndAuthCode(
-      userData.company,
+      userData.companyName,
       userData.companyCode
     );
     if (!company) {
@@ -57,6 +59,7 @@ const userService = {
     return response;
   },
 
+  /** 유저 조회 */
   async getUserById(id: number) {
     const user = await userRepository.findById(id);
 
@@ -81,6 +84,7 @@ const userService = {
     return response;
   },
 
+  /** 유저 수정 */
   async updateUser(id: number, userData: UpdateUserDto) {
     const { currentPassword, password, passwordConfirmation, ...updateFields } =
       userData;
@@ -110,6 +114,15 @@ const userService = {
       dataToUpdate.password = await bcrypt.hash(password, 10);
     }
 
+    // 3.5. 프로필 이미지 변경 시 기존 이미지 삭제
+    const isImageUrlUpdating = dataToUpdate.imageUrl !== undefined;
+    const hasExistingImage = existingUser.imageUrl !== null;
+    const isImageUrlChanged = dataToUpdate.imageUrl !== existingUser.imageUrl;
+
+    if (isImageUrlUpdating && hasExistingImage && isImageUrlChanged && existingUser.imageUrl) {
+      await deletePhysicalFile(existingUser.imageUrl, 'image');
+    }
+
     // 4. 정보 업데이트
     const updatedUser = await userRepository.update(id, dataToUpdate);
 
@@ -130,6 +143,7 @@ const userService = {
     return response;
   },
 
+  /** 유저 삭제 */
   async deleteUser(id: number) {
     const existingUser = await userRepository.findById(id);
     if (!existingUser) {

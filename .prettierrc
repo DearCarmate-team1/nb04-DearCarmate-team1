@@ -1,15 +1,19 @@
 {
   "singleQuote": true,
-  "semi": true,
+  "printWidth": 100,
   "tabWidth": 2,
   "useTabs": false,
-<<<<<<< HEAD
-  "printWidth": 100,
+  "semi": true,
+  "bracketSpacing": true,
   "trailingComma": "all",
+  "endOfLine": "lf",
   "arrowParens": "always",
-  "endOfLine": "auto"
-=======
-  "printWidth": 80,
-  "trailingComma": "all"
->>>>>>> 66fe3f8 (feat: 프로젝트 기본 파일 및 구조 세팅)
+  "overrides": [
+    {
+      "files": ["*.json"],
+      "options": {
+        "printWidth": 320
+      }
+    }
+  ]
 }
