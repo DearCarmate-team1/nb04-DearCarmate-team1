@@ -22,7 +22,7 @@ const contractDocumentController = {
 
   /** 계약서 업로드 시 계약 목록 조회 */
   async draftList(req: Request, res: Response): Promise<void> {
-    const data = await contractDocumentService.draftList();
+    const data = await contractDocumentService.draftList(req.user.companyId);
     res.status(200).json(data);
   },
 
