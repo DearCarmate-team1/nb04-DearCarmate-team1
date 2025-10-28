@@ -203,6 +203,109 @@ root/
 Request → Route → Middleware(Auth, Validate) → Controller → Service → Repository → Database
 ```
 
+## 🗄️ 데이터베이스 ERD
+
+### 핵심 엔티티 관계도
+
+```mermaid
+erDiagram
+    Company ||--o{ User : "1:N"
+    Company ||--o{ Customer : "1:N"
+    Company ||--o{ Car : "1:N"
+    Company ||--o{ Contract : "1:N"
+
+    CarModel ||--o{ Car : "1:N"
+    Car ||--o{ Contract : "1:N"
+    Customer ||--o{ Contract : "1:N"
+    User ||--o{ Contract : "1:N"
+
+    Contract ||--o{ ContractDocument : "1:N"
+    Contract ||--o{ Meeting : "1:N"
+
+    Company {
+        int id PK "회사 ID"
+        string name "회사명"
+        string authCode UK "인증코드"
+    }
+
+    User {
+        int id PK "사용자 ID"
+        string name "이름"
+        string email UK "이메일"
+        string employeeNumber UK "사번"
+        boolean isAdmin "관리자 여부"
+        int companyId FK "소속 회사"
+    }
+
+    Customer {
+        int id PK "고객 ID"
+        string name "이름"
+        string phoneNumber "전화번호"
+        string email "이메일"
+        int companyId FK "담당 회사"
+    }
+
+    Car {
+        int id PK "차량 ID"
+        string carNumber UK "차량번호"
+        int price "가격"
+        enum status "차량 상태"
+        int modelId FK "차량 모델"
+        int companyId FK "보유 회사"
+    }
+
+    CarModel {
+        int id PK "모델 ID"
+        string manufacturer "제조사"
+        string model "모델명"
+        enum type "차종"
+    }
+
+    Contract {
+        int id PK "계약 ID"
+        enum status "계약 상태"
+        int contractPrice "계약 금액"
+        int carId FK "차량"
+        int customerId FK "고객"
+        int userId FK "담당자"
+        int companyId FK "회사"
+    }
+
+    ContractDocument {
+        int id PK "문서 ID"
+        string fileName "파일명"
+        string fileKey UK "파일 키"
+        int contractId FK "계약"
+    }
+
+    Meeting {
+        int id PK "미팅 ID"
+        datetime date "미팅 일시"
+        int contractId FK "계약"
+    }
+```
+
+### Enum 타입
+
+**CarType (차종)**
+- `SEDAN`: 세단
+- `SUV`: SUV
+- `COMPACT`: 소형
+- `TRUCK`: 트럭
+- `VAN`: 밴
+
+**CarStatus (차량 상태)**
+- `possession`: 보유 중
+- `contractProceeding`: 계약 진행 중
+- `contractCompleted`: 계약 완료
+
+**ContractStatus (계약 상태)**
+- `carInspection`: 차량 확인
+- `priceNegotiation`: 가격 협의
+- `contractDraft`: 계약서 작성 중
+- `contractSuccessful`: 계약 완료
+- `contractFailed`: 계약 취소
+
 ## 🚀 시작하기
 
 ### 1. 프로젝트 클론
