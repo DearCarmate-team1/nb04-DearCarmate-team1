@@ -17,13 +17,11 @@ router.post(
   asyncHandler(contractDocumentController.upload)
 );
 
-// 토큰 기반 다운로드 (이메일 링크용 - 인증 불필요)
 router.get(
   "/download",
   asyncHandler(contractDocumentController.downloadWithToken)
 );
 
-// 인증 필요한 다운로드 (기존)
 router.get(
   "/:contractDocumentId/download",
   authenticate,

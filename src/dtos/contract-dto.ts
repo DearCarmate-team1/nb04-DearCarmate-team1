@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// 📋 계약 상태 enum (Prisma 스키마와 일치)
+// 계약 상태 enum
 export const contractStatusSchema = z.enum([
   'carInspection',
   'priceNegotiation',
@@ -10,14 +10,14 @@ export const contractStatusSchema = z.enum([
 ]);
 export type ContractStatus = z.infer<typeof contractStatusSchema>;
 
-// 🔔 알람 스키마 (ISO 8601 datetime 문자열)
+// 알람 스키마
 const alarmSchema = z
   .string()
   .refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid datetime format (ISO 8601 required).',
   });
 
-// 📅 미팅 스키마
+// 미팅 스키마
 const meetingSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Meeting date must be in ISO 8601 format.',
@@ -29,13 +29,13 @@ const meetingSchema = z.object({
     .default([]),
 });
 
-// 📁 계약서 문서 스키마 (수정용)
+// 계약서 문서 스키마
 const contractDocumentSchema = z.object({
   id: z.number().int().positive({ message: 'Invalid document ID.' }),
   fileName: z.string().min(1, { message: 'File name is required.' }),
 });
 
-// 📝 계약 생성 스키마
+// 계약 생성 스키마
 export const createContractSchema = z.object({
   carId: z.number().int().positive({ message: 'Invalid car ID.' }),
   customerId: z.number().int().positive({ message: 'Invalid customer ID.' }),
@@ -46,7 +46,7 @@ export const createContractSchema = z.object({
     .default([]),
 });
 
-// ✏️ 계약 수정 스키마
+// 계약 수정 스키마
 export const updateContractSchema = z.object({
   status: contractStatusSchema.optional(),
   resolutionDate: z
@@ -68,7 +68,7 @@ export const updateContractSchema = z.object({
   carId: z.number().int().positive({ message: 'Invalid car ID.' }).optional(),
 });
 
-// 📋 계약 목록 조회 쿼리 스키마
+// 계약 목록 조회 쿼리 스키마
 export const contractQuerySchema = z
   .object({
     searchBy: z.enum(['customerName', 'userName']).optional(),
@@ -95,7 +95,7 @@ export const contractQuerySchema = z
     }
   });
 
-// 📁 계약서 업로드 목록 조회 쿼리 스키마 (페이지네이션 포함)
+// 계약서 업로드 목록 조회 쿼리 스키마
 export const contractDocumentQuerySchema = z
   .object({
     page: z.coerce.number().int().positive().default(1),
@@ -124,12 +124,12 @@ export const contractDocumentQuerySchema = z
     }
   });
 
-// 🔢 contractId 파라미터 스키마
+// contractId 파라미터 스키마
 export const contractIdParamSchema = z.object({
   contractId: z.coerce.number().int().positive({ message: 'Invalid contract ID.' }),
 });
 
-// 📦 타입 추론 (DTO 타입들)
+// 타입 추론
 export type CreateContractDto = z.infer<typeof createContractSchema>;
 export type UpdateContractDto = z.infer<typeof updateContractSchema>;
 export type ContractQueryDto = z.infer<typeof contractQuerySchema>;

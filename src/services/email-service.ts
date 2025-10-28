@@ -23,6 +23,7 @@ interface SendContractEmailParams {
 }
 
 const emailService = {
+  /** 계약서 이메일 발송 */
   async sendContractEmail(params: SendContractEmailParams): Promise<void> {
     const { customerEmail, customerName, customerId, contractId, carName, documents } = params;
 
@@ -103,12 +104,12 @@ const emailService = {
       await sgMail.send(msg);
 
       if (NODE_ENV === 'development') {
-        console.log(`이메일 발송 완료: ${customerEmail} (계약 #${contractId}, 문서 ${documents.length}개)`);
+        console.log(`[INFO] Email sent: ${customerEmail} (Contract #${contractId}, ${documents.length} documents)`);
       }
     } catch (error) {
-      console.error('이메일 발송 실패:', error);
+      console.error('[ERROR] Email send failed:', error);
       if (error.response) {
-        console.error('SendGrid Error:', error.response.body);
+        console.error('[ERROR] SendGrid error:', error.response.body);
       }
       throw new Error('이메일 발송에 실패했습니다.');
     }

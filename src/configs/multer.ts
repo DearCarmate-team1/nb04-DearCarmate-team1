@@ -1,25 +1,12 @@
 import multer from 'multer';
 import path from 'path';
 
-// ========================================
-// 공통 유틸리티
-// ========================================
-
-/**
- * 한글 파일명 디코딩 (latin1 → utf8)
- * Multer는 파일명을 latin1로 인코딩하므로 한글 처리를 위해 디코딩 필요
- */
+/** 한글 파일명 디코딩 (latin1 → utf8) */
 export function decodeFileName(originalName: string): string {
   return Buffer.from(originalName, 'latin1').toString('utf8');
 }
 
-/**
- * 디코딩된 파일명으로 안전한 파일명 생성
- * - 파일 시스템 금지 문자만 제거 (한글, 괄호 등 유지)
- * - 타임스탬프 추가로 중복 방지
- * @param decodedName - UTF-8로 디코딩된 파일명
- * @returns 타임스탬프가 포함된 안전한 파일명
- */
+/** 디코딩된 파일명으로 안전한 파일명 생성 */
 export function generateSafeFileNameFromDecoded(decodedName: string): string {
   const ext = path.extname(decodedName);
   const basename = path.basename(decodedName, ext);
@@ -31,14 +18,7 @@ export function generateSafeFileNameFromDecoded(decodedName: string): string {
   return `${timestamp}_${sanitized}${ext}`;
 }
 
-// ========================================
-// 파일 필터 정의
-// ========================================
-
-/**
- * CSV 파일 전용 필터
- * - 용도: 차량/고객 대용량 업로드
- */
+/** CSV 파일 전용 필터 */
 const csvFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   const allowedMimes = ['text/csv', 'application/csv', 'text/plain'];
   const allowedExtensions = ['.csv'];
@@ -50,10 +30,7 @@ const csvFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   cb(null, true);
 };
 
-/**
- * 이미지 전용 필터 (PNG, JPEG만)
- * - 용도: 프로필 이미지, 차량 이미지 등
- */
+/** 이미지 전용 필터 (PNG, JPEG만) */
 const imageFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.mimetype)) {
     return cb(new Error('PNG 또는 JPEG 이미지만 업로드할 수 있습니다.'));
@@ -61,11 +38,7 @@ const imageFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   cb(null, true);
 };
 
-/**
- * 문서 필터 (PDF, DOC, DOCX)
- * - 용도: 계약서 문서
- * - 한글 파일명 지원
- */
+/** 문서 필터 (PDF, DOC, DOCX) */
 const documentFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   const allowedMimes = [
     'application/pdf',
@@ -81,26 +54,14 @@ const documentFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   cb(null, true);
 };
 
-// ========================================
-// Multer 인스턴스 (모두 메모리 기반)
-// ========================================
-
-/**
- * CSV 업로드 (메모리 전용)
- * - 개발/프로덕션: 메모리 → 파싱 → DB 저장
- * - 디스크 저장 안 함
- */
+/** CSV 업로드 (메모리 전용) */
 export const uploadCsv = multer({
   storage: multer.memoryStorage(),
   fileFilter: csvFilter,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
-/**
- * 이미지 업로드 (메모리 전용)
- * - 개발: 메모리 → 로컬 저장 (service에서 처리)
- * - 프로덕션: 메모리 → Cloudinary (service에서 처리)
- */
+/** 이미지 업로드 (메모리 전용) */
 export const uploadImage = multer({
   storage: multer.memoryStorage(),
   fileFilter: imageFilter,
@@ -110,11 +71,7 @@ export const uploadImage = multer({
   },
 });
 
-/**
- * 문서 업로드 (메모리 전용)
- * - 개발: 메모리 → 로컬 저장 (service에서 처리)
- * - 프로덕션: 메모리 → Cloudinary (service에서 처리)
- */
+/** 문서 업로드 (메모리 전용) */
 export const uploadDocument = multer({
   storage: multer.memoryStorage(),
   fileFilter: documentFilter,

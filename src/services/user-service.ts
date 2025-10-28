@@ -10,6 +10,7 @@ import {
 import { deletePhysicalFile } from '../utils/file-delete.js';
 
 const userService = {
+  /** 유저 생성 */
   async createUser(userData: CreateUserDto) {
     // 2. 이메일 중복 확인
     const existingUser = await userRepository.findByEmail(userData.email);
@@ -58,6 +59,7 @@ const userService = {
     return response;
   },
 
+  /** 유저 조회 */
   async getUserById(id: number) {
     const user = await userRepository.findById(id);
 
@@ -82,6 +84,7 @@ const userService = {
     return response;
   },
 
+  /** 유저 수정 */
   async updateUser(id: number, userData: UpdateUserDto) {
     const { currentPassword, password, passwordConfirmation, ...updateFields } =
       userData;
@@ -140,6 +143,7 @@ const userService = {
     return response;
   },
 
+  /** 유저 삭제 */
   async deleteUser(id: number) {
     const existingUser = await userRepository.findById(id);
     if (!existingUser) {

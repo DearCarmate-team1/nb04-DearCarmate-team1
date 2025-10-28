@@ -9,7 +9,7 @@ interface FindAllParams {
 }
 
 const contractDocumentRepository = {
-  // 계약서 목록 조회
+  /** 계약서 목록 조회 */
   async findAll({ page, pageSize, searchBy, keyword }: FindAllParams) {
     const where = searchBy && keyword ? { [searchBy]: { contains: keyword } } : {};
     const totalItemCount = await prisma.contractDocument.count({ where });
@@ -24,7 +24,7 @@ const contractDocumentRepository = {
     return { currentPage: page, totalPages: Math.ceil(totalItemCount / pageSize), totalItemCount, data };
   },
 
-  // 문서 업로드용 계약 목록 조회
+  /** 문서 업로드용 계약 목록 조회 */
   async findDrafts() {
     const contracts = await prisma.contract.findMany({
       where: { status: 'contractSuccessful', documents: { none: {} } },
@@ -37,7 +37,7 @@ const contractDocumentRepository = {
     return contracts.map(c => ({ id: c.id, data: `${c.car.model.model} - ${c.customer.name} 고객님` }));
   },
 
-  // 계약서 파일 저장
+  /** 계약서 파일 저장 */
   async saveFile(data: { url: string; fileName: string; size: number; mimeType: string }) {
     const document = await prisma.contractDocument.create({
       data: {
@@ -51,7 +51,7 @@ const contractDocumentRepository = {
     return document.id;
   },
 
-  // 계약서 ID 조회
+  /** 계약서 ID 조회 */
   async findById(id: number) {
     return await prisma.contractDocument.findUnique({
       where: { id },

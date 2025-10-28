@@ -8,7 +8,7 @@ import { BadRequestError, UnauthorizedError } from '../configs/custom-error.js';
 import cloudinary from '../configs/cloudinary-config.js';
 
 const contractDocumentController = {
-  // 계약서 목록 조회 (문서가 1건 이상인 계약 목록)
+  /** 계약서 목록 조회 (문서가 1건 이상인 계약 목록) */
   async list(req: Request, res: Response): Promise<void> {
     const { page = 1, pageSize = 10, searchBy, keyword } = req.query;
     const result = await contractService.getForDocumentUpload(req.user, {
@@ -20,13 +20,13 @@ const contractDocumentController = {
     res.status(200).json(result);
   },
 
-  // 계약서 업로드 시 계약 목록 조회
+  /** 계약서 업로드 시 계약 목록 조회 */
   async draftList(req: Request, res: Response): Promise<void> {
     const data = await contractDocumentService.draftList();
     res.status(200).json(data);
   },
 
-  // 계약서 업로드
+  /** 계약서 업로드 */
   async upload(req: Request, res: Response): Promise<void> {
     if (!req.file) {
       throw new BadRequestError('파일이 필요합니다');
@@ -36,7 +36,7 @@ const contractDocumentController = {
     res.status(200).json({ contractDocumentId: documentId });
   },
 
-  // 토큰 기반 계약서 다운로드 (이메일 링크용)
+  /** 토큰 기반 계약서 다운로드 (이메일 링크용) */
   async downloadWithToken(req: Request, res: Response): Promise<void> {
     const { token, docId } = req.query;
 
@@ -98,8 +98,7 @@ const contractDocumentController = {
               return;
             }
           } catch (error) {
-            console.error('Cloudinary 서명 URL 생성 실패:', error);
-            // 실패 시 원본 URL로 리다이렉트 시도
+            console.error('[ERROR] Cloudinary signed URL generation failed:', error);
           }
         }
 
@@ -125,7 +124,7 @@ const contractDocumentController = {
     }
   },
 
-  // 인증 필요한 계약서 다운로드 (기존)
+  /** 인증 필요한 계약서 다운로드 (기존) */
   async download(req: Request, res: Response): Promise<void> {
     const { contractDocumentId } = req.params;
     const file = await contractDocumentService.download(Number(contractDocumentId));
@@ -155,7 +154,7 @@ const contractDocumentController = {
             return;
           }
         } catch (error) {
-          console.error('Cloudinary 서명 URL 생성 실패:', error);
+          console.error('[ERROR] Cloudinary signed URL generation failed:', error);
         }
       }
 

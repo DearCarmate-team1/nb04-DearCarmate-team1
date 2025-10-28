@@ -23,9 +23,7 @@ import { ContractMapper } from '../mappers/contract-mapper.js';
 import type { ContractStatus, CarStatus } from '@prisma/client';
 import type { AuthUser } from '../types/auth-user.js';
 
-/** -------------------------------------------------
- * 🎯 계약 상태 상수 그룹
- * ------------------------------------------------- */
+// 계약 상태 상수 그룹
 const IN_PROGRESS_STATUSES: ContractStatus[] = [
   'carInspection',
   'priceNegotiation',
@@ -51,9 +49,7 @@ function getCarStatusFromContractStatus(contractStatus: ContractStatus): CarStat
 }
 
 const contractService = {
-  /** -------------------------------------------------
-   * 📝 계약 생성
-   * ------------------------------------------------- */
+  /** 계약 생성 */
   async create(user: AuthUser, dto: CreateContractDto): Promise<ContractResponseModel> {
     // 차량 존재 및 권한 검증
     const car = await carRepository.findById(dto.carId);
@@ -81,9 +77,7 @@ const contractService = {
     return ContractMapper.toResponseModel(entity);
   },
 
-  /** -------------------------------------------------
-   * 📋 계약 목록 조회 (칸반 형태 - status별 그룹화)
-   * ------------------------------------------------- */
+  /** 계약 목록 조회 (칸반 형태 - status별 그룹화) */
   async list(user: AuthUser, query: ContractQueryDto): Promise<ContractKanbanResponse> {
     const { searchBy, keyword } = query;
 
@@ -101,9 +95,7 @@ const contractService = {
     return ContractMapper.toKanbanResponse(entities);
   },
 
-  /** -------------------------------------------------
-   * 🔍 계약 상세 조회
-   * ------------------------------------------------- */
+  /** 계약 상세 조회 */
   async detail(user: AuthUser, contractId: number): Promise<ContractResponseModel> {
     const contract = await contractRepository.findById(contractId);
     if (!contract) throw new NotFoundError('계약을 찾을 수 없습니다.');
@@ -113,9 +105,7 @@ const contractService = {
     return ContractMapper.toResponseModel(entity);
   },
 
-  /** -------------------------------------------------
-   * ✏️ 계약 수정
-   * ------------------------------------------------- */
+  /** 계약 수정 */
   async update(
     user: AuthUser,
     contractId: number,
@@ -133,16 +123,12 @@ const contractService = {
     const oldStatus = contract.status;
     const newStatus = dto.status;
 
-    // ============================================
-    // 🚫 실패 → 성공 직행 금지
-    // ============================================
+    // 실패 → 성공 직행 금지
     if (newStatus && oldStatus === FAILED_STATUS && newStatus === SUCCESS_STATUS) {
       throw new BadRequestError('실패한 계약은 성공 상태로 직접 변경할 수 없습니다.');
     }
 
-    // ============================================
-    // 🚗 차량 상태 검증 (실패 → 진행중으로 변경 시만)
-    // ============================================
+    // 차량 상태 검증 (실패 → 진행중으로 변경 시만)
     // 완료 → 진행중은 같은 계약의 차량을 재사용하므로 검증 불필요
     if (newStatus && oldStatus === FAILED_STATUS && IN_PROGRESS_STATUSES.includes(newStatus)) {
       const car = await carRepository.findById(contract.carId);
@@ -169,9 +155,7 @@ const contractService = {
       if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
     }
 
-    // ============================================
-    // 📁 계약서 물리 삭제 (완료 → 다른 상태)
-    // ============================================
+    // 계약서 물리 삭제 (완료 → 다른 상태)
     if (newStatus && oldStatus === SUCCESS_STATUS && newStatus !== SUCCESS_STATUS) {
       const existingDocuments = await contractDocumentRepository.findByContractId(contractId);
 
@@ -185,8 +169,6 @@ const contractService = {
         await Promise.all(
           existingDocuments.map((doc: any) => contractDocumentRepository.delete(doc.id))
         );
-
-        console.log(`✅ 계약 상태 변경(완료→${newStatus}) - ${existingDocuments.length}개 문서 파일 삭제`);
       }
     }
 
@@ -244,20 +226,16 @@ const contractService = {
               fileName: doc.fileName,
             })),
           }).catch((err) => {
-            console.error('이메일 발송 실패:', err);
+            console.error('[ERROR] Email send failed:', err);
           });
         }
       }
-
-      console.log(`✅ 계약 수정 시 ${documentsToDelete.length}개 문서 파일 삭제`);
     }
 
     // DTO → Input 변환
     const updateInput = ContractMapper.fromUpdateDto(dto);
 
-    // ============================================
-    // 🔄 트랜잭션: 계약 + 차량 상태 동시 업데이트
-    // ============================================
+    // 트랜잭션: 계약 + 차량 상태 동시 업데이트
     const updated = await prisma.$transaction(async (tx) => {
       // 1. 계약 수정 (Repository 위임)
       const updatedContract = await contractRepository.update(contractId, updateInput, tx);
@@ -282,9 +260,7 @@ const contractService = {
     return ContractMapper.toResponseModel(entity);
   },
 
-  /** -------------------------------------------------
-   * 🗑️ 계약 삭제 (물리적 파일도 함께 삭제)
-   * ------------------------------------------------- */
+  /** 계약 삭제 (물리적 파일도 함께 삭제) */
   async remove(user: AuthUser, contractId: number): Promise<{ message: string }> {
     const contract = await contractRepository.findById(contractId);
     if (!contract) throw new NotFoundError('계약을 찾을 수 없습니다.');
@@ -310,9 +286,7 @@ const contractService = {
     return { message: '계약 삭제 성공' };
   },
 
-  /** -------------------------------------------------
-   * 🚗 계약용 차량 목록 조회
-   * ------------------------------------------------- */
+  /** 계약용 차량 목록 조회 */
   async getCarsForContract(user: AuthUser): Promise<SelectListItem[]> {
     const cars = await contractRepository.findCarsForContract(user.companyId);
 
@@ -322,9 +296,7 @@ const contractService = {
     }));
   },
 
-  /** -------------------------------------------------
-   * 👥 계약용 고객 목록 조회
-   * ------------------------------------------------- */
+  /** 계약용 고객 목록 조회 */
   async getCustomersForContract(user: AuthUser): Promise<SelectListItem[]> {
     const customers = await contractRepository.findCustomersForContract(user.companyId);
 
@@ -334,9 +306,7 @@ const contractService = {
     }));
   },
 
-  /** -------------------------------------------------
-   * 👤 계약용 유저 목록 조회
-   * ------------------------------------------------- */
+  /** 계약용 유저 목록 조회 */
   async getUsersForContract(user: AuthUser): Promise<SelectListItem[]> {
     const users = await contractRepository.findUsersForContract(user.companyId);
 
@@ -346,9 +316,7 @@ const contractService = {
     }));
   },
 
-  /** -------------------------------------------------
-   * 📁 계약서 업로드 계약 목록 조회 (페이지네이션)
-   * ------------------------------------------------- */
+  /** 계약서 업로드 계약 목록 조회 (페이지네이션) */
   async getForDocumentUpload(
     user: AuthUser,
     query: ContractDocumentQueryDto,
@@ -369,9 +337,7 @@ const contractService = {
     return ContractMapper.toDocumentListResponse(entities, page, totalPages, totalItemCount);
   },
 
-  /** -------------------------------------------------
-   * 🎯 계약서 추가용 계약 목록 조회 (선택 리스트용 - 간단)
-   * ------------------------------------------------- */
+  /** 계약서 추가용 계약 목록 조회 (선택 리스트용 - 간단) */
   async getForUpload(user: AuthUser): Promise<SelectListItem[]> {
     const contracts = await contractRepository.findForUpload(user.companyId);
 

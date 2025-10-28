@@ -8,6 +8,7 @@ import userRepository from '../repositories/user-repository.js';
 import userService from './user-service.js';
 
 const authService = {
+  /** 로그인 */
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
@@ -40,6 +41,7 @@ const authService = {
     };
   },
 
+  /** 토큰 갱신 */
   async refresh(refreshDto: RefreshDto) {
     const { refreshToken } = refreshDto;
 

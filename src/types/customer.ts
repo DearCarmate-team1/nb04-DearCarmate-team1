@@ -1,4 +1,4 @@
-/** 👤 고객 CSV 업로드용 Row 타입 */
+/** 고객 CSV 업로드용 Row 타입 */
 export interface CustomerCsvRow {
   name: string;
   gender: string;
@@ -9,7 +9,7 @@ export interface CustomerCsvRow {
   memo?: string;
 }
 
-/** 📤 고객 대용량 업로드 결과 */
+/** 고객 대용량 업로드 결과 */
 export interface CustomerBulkUploadResult {
   successCount: number;
   failureCount: number;

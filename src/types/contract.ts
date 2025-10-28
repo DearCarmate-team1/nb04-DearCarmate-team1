@@ -1,17 +1,13 @@
 import type { ContractStatus } from '@prisma/client';
 
-/** -------------------------------------------------
- * 📄 도메인 엔티티 (Prisma → Domain)
- * ------------------------------------------------- */
-
-/** 🔔 알람 엔티티 */
+/** 알람 엔티티 */
 export interface NotificationEntity {
   id: number;
   alarmTime: Date;
   meetingId: number;
 }
 
-/** 📅 미팅 엔티티 */
+/** 미팅 엔티티 */
 export interface MeetingEntity {
   id: number;
   date: Date;
@@ -19,7 +15,7 @@ export interface MeetingEntity {
   notifications: NotificationEntity[];
 }
 
-/** 📁 계약서 파일 엔티티 */
+/** 계약서 파일 엔티티 */
 export interface ContractDocumentEntity {
   id: number;
   fileName: string;
@@ -31,7 +27,7 @@ export interface ContractDocumentEntity {
   updatedAt: Date;
 }
 
-/** 📋 계약 엔티티 (전체 정보) */
+/** 계약 엔티티 */
 export interface ContractEntity {
   id: number;
   status: ContractStatus;
@@ -64,16 +60,12 @@ export interface ContractEntity {
   documents?: ContractDocumentEntity[] | undefined;
 }
 
-/** -------------------------------------------------
- * 📝 커맨드 입력 (Service → Repository 전달)
- * ------------------------------------------------- */
-
-/** 🔔 알람 생성 입력 */
+/** 알람 생성 입력 */
 export interface NotificationCreateInput {
   alarmTime: Date;
 }
 
-/** 📅 미팅 생성 입력 */
+/** 미팅 생성 입력 */
 export interface MeetingCreateInput {
   date: Date;
   notifications: {
@@ -81,7 +73,7 @@ export interface MeetingCreateInput {
   };
 }
 
-/** 📋 계약 생성 입력 */
+/** 계약 생성 입력 */
 export interface ContractCreateInput {
   status?: ContractStatus;
   contractPrice: number;
@@ -95,7 +87,7 @@ export interface ContractCreateInput {
   };
 }
 
-/** 📋 계약 수정 입력 */
+/** 계약 수정 입력 */
 export interface ContractUpdateInput {
   status?: ContractStatus;
   contractPrice?: number;
@@ -109,23 +101,19 @@ export interface ContractUpdateInput {
   };
 }
 
-/** -------------------------------------------------
- * 📤 응답 모델 (Controller → Client)
- * ------------------------------------------------- */
-
-/** 📅 미팅 응답 모델 */
+/** 미팅 응답 모델 */
 export interface MeetingResponseModel {
   date: string; // ISO 8601
   alarms: string[]; // ISO 8601
 }
 
-/** 📁 계약서 파일 응답 모델 (간단) */
+/** 계약서 파일 응답 모델 */
 export interface ContractDocumentResponseModel {
   id: number;
   fileName: string;
 }
 
-/** 📋 계약 상세 응답 모델 */
+/** 계약 상세 응답 모델 */
 export interface ContractResponseModel {
   id: number;
   status: ContractStatus;
@@ -147,7 +135,7 @@ export interface ContractResponseModel {
   };
 }
 
-/** 📋 계약 목록 아이템 (칸반용) */
+/** 계약 목록 아이템 (칸반용) */
 export interface ContractListItem {
   id: number;
   contractName: string; // 동적 생성
@@ -169,13 +157,13 @@ export interface ContractListItem {
   status: ContractStatus;
 }
 
-/** 📊 상태별 계약 그룹 */
+/** 상태별 계약 그룹 */
 export interface ContractsByStatus {
   totalItemCount: number;
   data: ContractListItem[];
 }
 
-/** 📊 칸반 응답 (status별 그룹화) */
+/** 칸반 응답 (status별 그룹화) */
 export interface ContractKanbanResponse {
   carInspection: ContractsByStatus;
   priceNegotiation: ContractsByStatus;
@@ -184,7 +172,7 @@ export interface ContractKanbanResponse {
   contractFailed: ContractsByStatus;
 }
 
-/** 📁 계약서 업로드 계약 목록 아이템 */
+/** 계약서 업로드 계약 목록 아이템 */
 export interface ContractDocumentListItem {
   id: number;
   contractName: string; // 동적 생성
@@ -195,7 +183,7 @@ export interface ContractDocumentListItem {
   documents: ContractDocumentResponseModel[];
 }
 
-/** 📁 계약서 업로드 계약 목록 응답 (페이지네이션) */
+/** 계약서 업로드 계약 목록 응답 (페이지네이션) */
 export interface ContractDocumentListResponse {
   currentPage: number;
   totalPages: number;
@@ -203,7 +191,7 @@ export interface ContractDocumentListResponse {
   data: ContractDocumentListItem[];
 }
 
-/** 🎯 선택 리스트 아이템 응답 (id + data) */
+/** 선택 리스트 아이템 응답 */
 export interface SelectListItem {
   id: number;
   data: string;

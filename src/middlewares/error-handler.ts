@@ -5,13 +5,10 @@ import { AppError, BadRequestError } from '../configs/custom-error.js';
 import { NODE_ENV } from '../configs/constants.js';
 
 export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction) {
-  // ===========================
-  // 🧾 에러 로깅
-  // ===========================
-  console.error('===== Global Error Handler =====');
-  console.error('Error Name:', err.name);
-  console.error('Error Message:', err.message);
-  console.error('Request:', {
+  console.error('[ERROR] Global Error Handler');
+  console.error('[ERROR] Name:', err.name);
+  console.error('[ERROR] Message:', err.message);
+  console.error('[ERROR] Request:', {
     method: req.method,
     url: req.originalUrl,
     ip: req.ip,
@@ -19,12 +16,10 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   });
 
   if (NODE_ENV === 'development') {
-    console.error('Stack Trace:', err.stack);
+    console.error('[ERROR] Stack:', err.stack);
   }
 
-  // ===========================
-  // ✅ Zod 유효성 검증 에러
-  // ===========================
+  // Zod 유효성 검증 에러
   if (err instanceof ZodError) {
     const errorDetails = err.issues.map((issue) => ({
       field: issue.path.join('.'),
@@ -39,9 +34,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
     });
   }
 
-  // ===========================
-  // ✅ Prisma 에러
-  // ===========================
+  // Prisma 에러
   if (err instanceof Prisma.PrismaClientValidationError) {
     return res.status(400).json({
       message: '데이터베이스 쿼리가 유효하지 않습니다.',
@@ -49,8 +42,8 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   }
 
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    console.error('Prisma Error Code:', err.code);
-    console.error('Prisma Meta:', err.meta);
+    console.error('[ERROR] Prisma error code:', err.code);
+    console.error('[ERROR] Prisma meta:', err.meta);
 
     switch (err.code) {
       case 'P2002': {
@@ -74,9 +67,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
     }
   }
 
-  // ===========================
-  // ✅ 비즈니스 로직 에러 (AppError)
-  // ===========================
+  // 비즈니스 로직 에러 (AppError)
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       message: err.message,
@@ -84,10 +75,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
     });
   }
 
-  // ===========================
-  // ✅ 알 수 없는 에러 (Catch-all)
-  // ===========================
-  console.error('Unhandled Error:', err);
+  console.error('[ERROR] Unhandled error:', err);
 
   return res.status(500).json({
     message: '서버 내부 오류가 발생했습니다.',

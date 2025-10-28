@@ -3,6 +3,7 @@ import { DashboardResponseDto } from '../dtos/dashboard-dto.js';
 import { CarType } from '@prisma/client';
 
 const dashboardService = {
+  /** 대시보드 데이터 조회 */
   async getDashboardData(companyId: number): Promise<DashboardResponseDto> {
     // 1. 날짜 범위 계산
     const now = new Date();

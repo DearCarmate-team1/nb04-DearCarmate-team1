@@ -69,7 +69,7 @@ const router = Router();
  */
 router.get(
   '/',
-  authenticate, // 인증 미들웨어 적용
+  authenticate,
   dashboardController.getDashboardData
 );
 

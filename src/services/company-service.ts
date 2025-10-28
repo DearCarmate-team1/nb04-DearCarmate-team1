@@ -11,7 +11,7 @@ import prisma from '../configs/prisma-client.js';
 import { ConflictError, NotFoundError } from '../configs/custom-error.js';
 
 const companyService = {
-  // 회사 등록
+  /** 회사 등록 */
   async create(companyData: CreateCompanyDto) {
 
     // 회사 이름 중복 확인
@@ -33,11 +33,11 @@ const companyService = {
       companyName: newCompany.name,
       companyCode: newCompany.authCode,
       userCount: newCompany._count.User,
-    } 
+    }
     return responseDto;
   },
 
-  // 회사 목록 조회
+  /** 회사 목록 조회 */
   async getAll(query: GetCompaniesDto) {
     const page = Number(query.page) || 1;
     const pageSize = Number(query.pageSize) || 10;
@@ -66,7 +66,7 @@ const companyService = {
     };
   },
 
-  // 회사별 유저 조회
+  /** 회사별 유저 조회 */
   async getUsersByCompany(query: GetUsersByCompanyDto) {
 
     const page = Number(query.page) || 1;
@@ -97,7 +97,7 @@ const companyService = {
     };
   },
 
-  // 회사 수정
+  /** 회사 수정 */
   async update(companyId: number, companyData: UpdateCompanyDto) {
     const existingCompany = await companyRepository.findById(companyId);
     if (!existingCompany) {
@@ -113,7 +113,7 @@ const companyService = {
     return responseDto;
   },
 
-  // 회사 삭제
+  /** 회사 삭제 */
   async delete(companyId: number) {
     const existingCompany = await companyRepository.findById(companyId);
     if (!existingCompany) {

@@ -3,11 +3,12 @@ import contractDocumentRepository from '../repositories/contract-document-reposi
 import { uploadFile } from '../utils/file-storage.js';
 
 const contractDocumentService = {
-
+  /** 계약서 목록 조회 */
   async list(params: { page: number; pageSize: number; searchBy?: string; keyword?: string }) {
     return await contractDocumentRepository.findAll(params);
   },
 
+  /** 계약서 업로드용 계약 목록 조회 */
   async draftList() {
     return await contractDocumentRepository.findDrafts();
   },
@@ -38,6 +39,7 @@ const contractDocumentService = {
     });
   },
 
+  /** 계약서 다운로드 */
   async download(id: number) {
     const file = await contractDocumentRepository.findById(id);
     if (!file) throw new Error('파일을 찾을 수 없습니다');

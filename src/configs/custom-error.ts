@@ -3,7 +3,6 @@ export interface ErrorDetail {
   message: string;
 }
 
-// ✅ 추상 클래스: 모든 커스텀 에러의 부모
 export abstract class AppError extends Error {
   public readonly statusCode: number;
   public readonly details: ErrorDetail[] | undefined;
@@ -20,7 +19,6 @@ export abstract class AppError extends Error {
   }
 }
 
-// ✅ 개별 에러 클래스들
 export class BadRequestError extends AppError {
   constructor(message = '잘못된 요청입니다.', details?: ErrorDetail[]) {
     super(message, 400, details);
