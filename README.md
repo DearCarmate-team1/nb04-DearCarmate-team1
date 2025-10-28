@@ -224,71 +224,102 @@ erDiagram
     Meeting ||--o{ Notification : "1:N"
 
     Company {
-        int id PK "회사 ID"
-        string name "회사명"
-        string authCode UK "인증코드"
+        int id PK
+        string name
+        string authCode UK
+        datetime createdAt
+        datetime updatedAt
     }
 
     User {
-        int id PK "사용자 ID"
-        string name "이름"
-        string email UK "이메일"
-        string employeeNumber UK "사번"
-        boolean isAdmin "관리자 여부"
-        int companyId FK "소속 회사"
+        int id PK
+        string name
+        string email UK
+        string password
+        string employeeNumber UK
+        string phoneNumber
+        string imageUrl
+        boolean isAdmin
+        string currentHashedRefreshToken
+        int companyId FK
+        datetime createdAt
+        datetime updatedAt
     }
 
     Customer {
-        int id PK "고객 ID"
-        string name "이름"
-        string phoneNumber "전화번호"
-        string email "이메일"
-        int companyId FK "담당 회사"
+        int id PK
+        string name
+        string gender
+        string phoneNumber
+        string ageGroup
+        string region
+        string email
+        string memo
+        int companyId FK
+        datetime createdAt
+        datetime updatedAt
     }
 
     Car {
-        int id PK "차량 ID"
-        string carNumber UK "차량번호"
-        int price "가격"
-        enum status "차량 상태"
-        int modelId FK "차량 모델"
-        int companyId FK "보유 회사"
+        int id PK
+        string carNumber UK
+        int manufacturingYear
+        int mileage
+        int price
+        int accidentCount
+        string explanation
+        string accidentDetails
+        enum status
+        int modelId FK
+        int companyId FK
+        datetime createdAt
+        datetime updatedAt
     }
 
     CarModel {
-        int id PK "모델 ID"
-        string manufacturer "제조사"
-        string model "모델명"
-        enum type "차종"
+        int id PK
+        string manufacturer
+        string model
+        enum type
+        datetime createdAt
+        datetime updatedAt
     }
 
     Contract {
-        int id PK "계약 ID"
-        enum status "계약 상태"
-        int contractPrice "계약 금액"
-        int carId FK "차량"
-        int customerId FK "고객"
-        int userId FK "담당자"
-        int companyId FK "회사"
+        int id PK
+        enum status
+        int contractPrice
+        datetime resolutionDate
+        int carId FK
+        int userId FK
+        int customerId FK
+        int companyId FK
+        datetime createdAt
+        datetime updatedAt
     }
 
     ContractDocument {
-        int id PK "문서 ID"
-        string fileName "파일명"
-        string fileKey UK "파일 키"
-        int contractId FK "계약"
+        int id PK
+        string fileName
+        string fileKey UK
+        string filePath
+        string mimeType
+        int size
+        int contractId FK
+        datetime createdAt
+        datetime updatedAt
     }
 
     Meeting {
-        int id PK "미팅 ID"
-        datetime date "미팅 일시"
-        int contractId FK "계약"
+        int id PK
+        datetime date
+        int contractId FK
     }
 
     Notification {
-        int id PK "알림 ID"
-        datetime alarmTime "알림 시간"
-        int meetingId FK "미팅"
+        int id PK
+        datetime alarmTime
+        int meetingId FK
     }
 ```
 
