@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** 🔧 차량 검증 규칙 상수 */
+/** 차량 검증 규칙 상수 */
 const CAR_VALIDATION = {
   YEAR_MIN: 1900,
   YEAR_MAX: () => new Date().getFullYear() + 1,
@@ -9,11 +9,11 @@ const CAR_VALIDATION = {
   ACCIDENT_COUNT_MAX: 100,
 } as const;
 
-/** 🚗 차량 상태 Enum (Zod 기반) */
+/** 차량 상태 Enum */
 export const carStatusSchema = z.enum(['possession', 'contractProceeding', 'contractCompleted']);
 export type CarStatus = z.infer<typeof carStatusSchema>;
 
-// 🚗 차량 등록 DTO
+// 차량 등록 DTO
 export const createCarSchema = z.object({
   carNumber: z.string().min(1, { message: '차량 번호는 필수입니다.' }),
   manufacturer: z.string().min(1, { message: '제조사는 필수입니다.' }),
@@ -48,12 +48,12 @@ export const createCarSchema = z.object({
   accidentDetails: z.string().optional(),
 });
 
-// 🚙 차량 수정 DTO (createCarSchema 기반 + status 추가)
+// 차량 수정 DTO
 export const updateCarSchema = createCarSchema.partial().extend({
   status: carStatusSchema.optional(),
 });
 
-// 🔍 차량 조회 DTO (쿼리 기반)
+// 차량 조회 DTO
 export const carQuerySchema = z
   .object({
     page: z.coerce.number().int().positive().default(1),
@@ -84,12 +84,12 @@ export const carQuerySchema = z
     }
   });
 
-// 🔑 params용 (자동 숫자 변환)
+// params용 (자동 숫자 변환)
 export const carIdParamSchema = z.object({
   carId: z.coerce.number().int().positive({ message: '유효한 차량 ID가 아닙니다.' }),
 });
 
-// 🧩 타입 추론 (DTO 역할)
+// 타입 추론
 export type CreateCarDto = z.infer<typeof createCarSchema>;
 export type UpdateCarDto = z.infer<typeof updateCarSchema>;
 export type CarQueryDto = z.infer<typeof carQuerySchema>;

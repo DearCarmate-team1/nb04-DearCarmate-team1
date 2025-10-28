@@ -1,11 +1,9 @@
 import { z } from 'zod';
 
-// 성별 enum
 export const genderSchema = z.enum(['male', 'female'], {
   message: '유효한 성별을 선택하세요.',
 });
 
-// 생성 스키마
 export const createCustomerSchema = z.object({
   name: z.string().min(1, { message: '이름은 필수입니다.' }),
   gender: genderSchema,
@@ -18,18 +16,14 @@ export const createCustomerSchema = z.object({
   memo: z.string().optional(),
 });
 
-// 수정 스키마
 export const updateCustomerSchema = createCustomerSchema.partial();
 
-// params 스키마
 export const customerIdParamSchema = z.object({
   customerId: z.coerce.number().int().positive({ message: '유효한 고객 ID가 아닙니다.' }),
 });
 
-// 타입 추론
 export type CreateCustomerDto = z.infer<typeof createCustomerSchema>;
 export type UpdateCustomerDto = z.infer<typeof updateCustomerSchema>;
 
-// 하위 호환성을 위한 타입 별칭 (기존 코드에서 DTO 대문자 사용)
 export type CreateCustomerDTO = CreateCustomerDto;
 export type UpdateCustomerDTO = UpdateCustomerDto;

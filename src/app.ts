@@ -27,9 +27,6 @@ import { errorHandler } from './middlewares/error-handler.js';
 const app = express();
 const port = Number(PORT) || 3001;
 
-// ==========================
-// 🛡️ 보안 헤더 (Helmet)
-// ==========================
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -44,33 +41,21 @@ app.use(
   }),
 );
 
-// ==========================
-// 🧾 HTTP 로깅 (Morgan)
-// ==========================
 if (NODE_ENV === 'development') {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
 }
 
-// ==========================
-// 🌐 기본 미들웨어
-// ==========================
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cors({ origin: CORS_ORIGINS, credentials: true }));
 
-// ==========================
-// 📁 정적 파일 서빙 (개발 환경만)
-// ==========================
 if (NODE_ENV === 'development') {
   app.use('/uploads', express.static('uploads'));
-  console.log('📁 개발 환경: /uploads 정적 파일 서빙 활성화');
+  console.log('[INFO] Development mode: Static file serving enabled at /uploads');
 }
 
-// ==========================
-// 🏥 헬스체크
-// ==========================
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
@@ -79,14 +64,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ==========================
-// 📖 API 문서 (Swagger)
-// ==========================
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// ==========================
-// 🧩 라우터 등록
-// ==========================
 app.use('/companies', companyRoute);
 app.use('/users', userRoute);
 app.use('/auth', authRoute);
@@ -97,51 +76,39 @@ app.use('/dashboard', dashboardRoute);
 app.use('/contracts', contractRoute);
 app.use('/contractDocuments', contractDocumentRoute);
 
-// ==========================
-// ❌ 404 핸들러
-// ==========================
 app.use(notFoundHandler);
 
-// ==========================
-// ⚠️ 글로벌 에러 핸들러
-// ==========================
 app.use(errorHandler);
 
-// ==========================
-// 🖥️ 서버 시작
-// ==========================
 const server = app.listen(port, () => {
   if (NODE_ENV === 'development') {
-    console.log(`🚀 Server is running at http://localhost:${port}`);
+    console.log(`[INFO] Server running at http://localhost:${port}`);
   } else {
-    console.log(`🚀 Server is running at ${BASE_URL || `port ${port}`}`);
+    console.log(`[INFO] Server running at ${BASE_URL || `port ${port}`}`);
   }
-  console.log(`📌 Environment: ${NODE_ENV}`);
+  console.log(`[INFO] Environment: ${NODE_ENV}`);
 });
 
-// ==========================
-// 🧹 Graceful Shutdown
-// ==========================
 let isShuttingDown = false;
 
 const shutdown = async (signal: string) => {
-  if (isShuttingDown) return; // 🔥 이미 처리 중이면 무시
+  if (isShuttingDown) return;
   isShuttingDown = true;
-  console.log(`\n🛑 [${signal}] Gracefully shutting down...`);
-  
+  console.log(`\n[INFO] ${signal} received. Shutting down gracefully...`);
+
   const forceExit = setTimeout(() => {
-    console.log('⏱️ Timeout reached. Force exiting...');
+    console.log('[WARN] Shutdown timeout. Force exiting...');
     process.exit(1);
   }, 5000);
 
   try {
     await prisma.$disconnect();
     server.close(() => {
-      console.log('✅ Server closed. Bye 👋');
+      console.log('[INFO] Server closed successfully');
       process.exit(0);
     });
   } catch (err) {
-    console.error('❌ Shutdown error:', err);
+    console.error('[ERROR] Shutdown error:', err);
     process.exit(1);
   }
 };
@@ -149,23 +116,18 @@ const shutdown = async (signal: string) => {
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
-// ==========================
-// 💥 예상치 못한 에러 처리
-// ==========================
 process.on('unhandledRejection', (reason: Error | any) => {
-  console.error('🚨 Unhandled Promise Rejection:', reason);
-  console.error('Stack:', reason?.stack);
+  console.error('[ERROR] Unhandled Promise Rejection:', reason);
+  console.error('[ERROR] Stack:', reason?.stack);
 
-  // 프로덕션에서는 서버 종료
   if (NODE_ENV === 'production') {
     shutdown('UNHANDLED_REJECTION');
   }
 });
 
 process.on('uncaughtException', (error: Error) => {
-  console.error('🚨 Uncaught Exception:', error);
-  console.error('Stack:', error.stack);
+  console.error('[ERROR] Uncaught Exception:', error);
+  console.error('[ERROR] Stack:', error.stack);
 
-  // 심각한 에러이므로 무조건 종료
   shutdown('UNCAUGHT_EXCEPTION');
 });

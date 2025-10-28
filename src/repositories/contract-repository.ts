@@ -2,14 +2,7 @@ import prisma from '../configs/prisma-client.js';
 import type { Prisma } from '@prisma/client';
 import type { ContractCreateInput, ContractUpdateInput } from '../types/contract.js';
 
-/** -------------------------------------------------
- * 📋 Contract Repository
- * - Prisma를 이용한 DB 쿼리
- * - 트랜잭션 관리
- * - 관계 데이터 포함 (car, customer, user, meetings, notifications, documents)
- * ------------------------------------------------- */
-
-/** 📦 포함 정의 (기본) */
+/** 포함 정의 (기본) */
 const CONTRACT_INCLUDE = {
   car: {
     include: {
@@ -26,16 +19,14 @@ const CONTRACT_INCLUDE = {
   },
 } as const;
 
-/** 📁 계약서 파일 포함 정의 */
+/** 계약서 파일 포함 정의 */
 const CONTRACT_WITH_DOCUMENTS_INCLUDE = {
   ...CONTRACT_INCLUDE,
   documents: true,
 } as const;
 
 const contractRepository = {
-  /** -------------------------------------------------
-   * 📝 계약 생성
-   * ------------------------------------------------- */
+  /** 계약 생성 */
   async create(
     data: ContractCreateInput,
   ): Promise<Prisma.ContractGetPayload<{ include: typeof CONTRACT_INCLUDE }>> {
@@ -45,9 +36,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 📋 회사별 계약 조회 + 검색 필터
-   * ------------------------------------------------- */
+  /** 회사별 계약 조회 + 검색 필터 */
   async findByCompanyWithFilters(params: {
     companyId: number;
     searchBy?: 'customerName' | 'userName';
@@ -73,9 +62,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 🔍 ID로 단일 계약 조회 (계약서 파일 포함)
-   * ------------------------------------------------- */
+  /** ID로 단일 계약 조회 (계약서 파일 포함) */
   async findById(id: number): Promise<Prisma.ContractGetPayload<{
     include: typeof CONTRACT_WITH_DOCUMENTS_INCLUDE;
   }> | null> {
@@ -85,9 +72,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * ✏️ 계약 수정
-   * ------------------------------------------------- */
+  /** 계약 수정 */
   async update(
     id: number,
     data: ContractUpdateInput,
@@ -147,17 +132,12 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 🗑️ 계약 삭제
-   * ------------------------------------------------- */
+  /** 계약 삭제 */
   async delete(id: number): Promise<void> {
     await prisma.contract.delete({ where: { id } });
   },
 
-  /** -------------------------------------------------
-   * 🚗 계약용 차량 목록 조회 (선택)
-   * - 보유 중(possession) 상태의 차량만 반환
-   * ------------------------------------------------- */
+  /** 계약용 차량 목록 조회 (보유 중 차량만) */
   async findCarsForContract(companyId: number): Promise<
     Prisma.CarGetPayload<{
       select: { id: true; carNumber: true; model: { select: { model: true } } };
@@ -181,9 +161,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 👥 계약용 고객 목록 조회 (선택)
-   * ------------------------------------------------- */
+  /** 계약용 고객 목록 조회 */
   async findCustomersForContract(
     companyId: number,
   ): Promise<Prisma.CustomerGetPayload<{ select: { id: true; name: true; email: true } }>[]> {
@@ -198,9 +176,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 👤 계약용 유저 목록 조회 (선택)
-   * ------------------------------------------------- */
+  /** 계약용 유저 목록 조회 */
   async findUsersForContract(
     companyId: number,
   ): Promise<Prisma.UserGetPayload<{ select: { id: true; name: true; email: true } }>[]> {
@@ -215,9 +191,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 📁 계약서 업로드 계약 목록 조회 (페이지네이션)
-   * ------------------------------------------------- */
+  /** 계약서 업로드 계약 목록 조회 (페이지네이션) */
   async findForDocumentUpload(params: {
     companyId: number;
     page: number;
@@ -258,9 +232,7 @@ const contractRepository = {
     return { totalItemCount, data };
   },
 
-  /** -------------------------------------------------
-   * 🎯 계약서 추가 계약 목록 조회 (선택 리스트용 - 간단)
-   * ------------------------------------------------- */
+  /** 계약서 추가 계약 목록 조회 (선택 리스트용) */
   async findForUpload(companyId: number): Promise<
     Prisma.ContractGetPayload<{
       select: {
@@ -289,9 +261,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 📁 계약 문서 업데이트 (contractId 연결)
-   * ------------------------------------------------- */
+  /** 계약 문서 업데이트 (contractId 연결) */
   async updateContractDocument(documentId: number, contractId: number) {
     return prisma.contractDocument.update({
       where: { id: documentId },
@@ -299,9 +269,7 @@ const contractRepository = {
     });
   },
 
-  /** -------------------------------------------------
-   * 📁 계약 문서 연결 해제 (해당 계약의 모든 문서)
-   * ------------------------------------------------- */
+  /** 계약 문서 연결 해제 (해당 계약의 모든 문서) */
   async disconnectAllDocuments(contractId: number) {
     return prisma.contractDocument.updateMany({
       where: { contractId },

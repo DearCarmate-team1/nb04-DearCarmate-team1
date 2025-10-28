@@ -166,8 +166,6 @@ router.patch('/me', authenticate, validate(updateUserSchema, 'body'), asyncHandl
  */
 router.delete('/me', authenticate, asyncHandler(userController.deleteMe));
 
-// ------ 관리자용 API ------
-
 /**
  * @swagger
  * /users/{id}:

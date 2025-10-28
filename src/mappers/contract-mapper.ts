@@ -23,18 +23,8 @@ import type {
 } from '@prisma/client';
 import type { CreateContractDto, UpdateContractDto } from '../dtos/contract-dto.js';
 
-/** -------------------------------------------------
- * 🔄 Contract Mapper
- * - Prisma → Domain → Response 변환
- * - 데이터 정규화 (중복 제거, 단일 출처 관리)
- * - contractName 동적 생성
- * ------------------------------------------------- */
 export const ContractMapper = {
-  /** -------------------------------------------------
-   * 📥 Prisma → Domain Entity 변환
-   * ------------------------------------------------- */
-
-  /** 🔔 Notification 변환 */
+  /** Notification 변환 */
   fromPrismaNotification(notification: Notification): NotificationEntity {
     return {
       id: notification.id,
@@ -43,7 +33,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 📅 Meeting 변환 */
+  /** Meeting 변환 */
   fromPrismaMeeting(meeting: Meeting & { notifications: Notification[] }): MeetingEntity {
     return {
       id: meeting.id,
@@ -53,7 +43,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 📋 Contract 변환 (Prisma → Entity) */
+  /** Contract 변환 (Prisma → Entity) */
   fromPrisma(
     contract: Contract & {
       car: { id: number; carNumber: string; model: { manufacturer: string; model: string } };
@@ -104,16 +94,12 @@ export const ContractMapper = {
     };
   },
 
-  /** -------------------------------------------------
-   * 📤 Entity → Response 변환
-   * ------------------------------------------------- */
-
-  /** ✨ contractName 동적 생성 함수 */
+  /** contractName 동적 생성 함수 */
   generateContractName(carModel: string, customerName: string): string {
     return `${carModel} - ${customerName} 고객님`;
   },
 
-  /** 📅 Meeting → MeetingResponseModel 변환 */
+  /** Meeting → MeetingResponseModel 변환 */
   toMeetingResponse(meeting: MeetingEntity): MeetingResponseModel {
     return {
       date: meeting.date.toISOString(),
@@ -121,7 +107,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 📋 ContractEntity → ContractResponseModel 변환 */
+  /** ContractEntity → ContractResponseModel 변환 */
   toResponseModel(entity: ContractEntity): ContractResponseModel {
     return {
       id: entity.id,
@@ -145,7 +131,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 📋 ContractEntity → ContractListItem 변환 (칸반용) */
+  /** ContractEntity → ContractListItem 변환 (칸반용) */
   toListItem(entity: ContractEntity): ContractListItem {
     return {
       id: entity.id,
@@ -169,7 +155,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 📊 ContractEntity[] → ContractKanbanResponse 변환 (status별 그룹화) */
+  /** ContractEntity[] → ContractKanbanResponse 변환 (status별 그룹화) */
   toKanbanResponse(entities: ContractEntity[]): ContractKanbanResponse {
     const grouped: {
       carInspection: ContractEntity[];
@@ -215,7 +201,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 📁 계약서 업로드 목록 변환 */
+  /** 계약서 업로드 목록 변환 */
   toDocumentListItem(entity: ContractEntity): ContractDocumentListItem {
     return {
       id: entity.id,
@@ -234,7 +220,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 📁 계약서 업로드 목록 응답 변환 (페이지네이션) */
+  /** 계약서 업로드 목록 응답 변환 (페이지네이션) */
   toDocumentListResponse(
     entities: ContractEntity[],
     currentPage: number,
@@ -249,7 +235,7 @@ export const ContractMapper = {
     };
   },
 
-  /** 🎯 선택 리스트 아이템 변환 (id + data) */
+  /** 선택 리스트 아이템 변환 (id + data) */
   toSelectListItem(carModel: string, customerName: string, id: number): SelectListItem {
     return {
       id,
@@ -257,11 +243,7 @@ export const ContractMapper = {
     };
   },
 
-  /** -------------------------------------------------
-   * 📝 DTO → Input 변환
-   * ------------------------------------------------- */
-
-  /** 📝 CreateContractDto → ContractCreateInput 변환 */
+  /** CreateContractDto → ContractCreateInput 변환 */
   fromCreateDto(
     dto: CreateContractDto,
     userId: number,
@@ -293,7 +275,7 @@ export const ContractMapper = {
     return input;
   },
 
-  /** ✏️ UpdateContractDto → ContractUpdateInput 변환 */
+  /** UpdateContractDto → ContractUpdateInput 변환 */
   fromUpdateDto(dto: UpdateContractDto): ContractUpdateInput {
     const input: ContractUpdateInput = {};
 

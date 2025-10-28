@@ -21,11 +21,11 @@ import { cleanupContractDocuments } from '../utils/contract-cleanup.js';
 import prisma from '../configs/prisma-client.js';
 
 const carService = {
-  // 🚗 차량 등록
+  /** 차량 등록 */
   async create(user: AuthUser, dto: CreateCarDto): Promise<CarResponseModel> {
     const { manufacturer, model, carNumber } = dto;
 
-    // ✅ 중복 차량 번호 검사
+    // 중복 차량 번호 검사
     const existingCar = await carRepository.findByCarNumber(carNumber);
     if (existingCar) {
       throw new ConflictError(`차량 번호 "${carNumber}"는 이미 등록되어 있습니다.`);
@@ -41,7 +41,7 @@ const carService = {
     return CarMapper.toResponseModel(entity);
   },
 
-  // 📋 차량 목록
+  /** 차량 목록 조회 */
   async list(user: AuthUser, query: CarQueryDto): Promise<CarListResponse> {
     const { page, pageSize, status, searchBy, keyword } = query;
 
@@ -59,7 +59,7 @@ const carService = {
     return CarMapper.toListResponse(entities, page, totalPages, totalItemCount);
   },
 
-  // 🔍 상세
+  /** 차량 상세 조회 */
   async detail(user: AuthUser, carId: number): Promise<CarResponseModel> {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
@@ -69,7 +69,7 @@ const carService = {
     return CarMapper.toResponseModel(entity);
   },
 
-  // ✏️ 수정
+  /** 차량 수정 */
   async update(user: AuthUser, carId: number, dto: UpdateCarDto): Promise<CarResponseModel> {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
@@ -98,7 +98,7 @@ const carService = {
     return CarMapper.toResponseModel(entity);
   },
 
-  // 🗑 삭제 (관련 계약 문서들의 물리적 파일도 함께 삭제)
+  /** 차량 삭제 (관련 계약 문서들의 물리적 파일도 함께 삭제) */
   async remove(user: AuthUser, carId: number): Promise<{ message: string }> {
     const car = await carRepository.findById(carId);
     if (!car) throw new NotFoundError('존재하지 않는 차량입니다.');
@@ -118,7 +118,7 @@ const carService = {
     return { message: '차량이 삭제되었습니다.' };
   },
 
-  // 🚘 제조사/모델 목록
+  /** 제조사/모델 목록 조회 */
   async getModels(): Promise<Array<{ manufacturer: string; model: string[] }>> {
     const flat = await carModelRepository.findAllFlat();
     const grouped = flat.reduce<Record<string, string[]>>((acc, cur) => {
@@ -132,7 +132,7 @@ const carService = {
     }));
   },
 
-  /** 🚚 대용량 CSV 업로드 (메모리 기반 - 디스크 저장 안 함) */
+  /** 대용량 CSV 업로드 (메모리 기반 - 디스크 저장 안 함) */
   async bulkUpload(user: AuthUser, file: Express.Multer.File | undefined): Promise<BulkUploadResult> {
     // Step 1: 파일 검증
     if (!file) {
@@ -147,7 +147,7 @@ const carService = {
     }
 
     // Step 3: N+1 쿼리 해결 - 사전 캐싱
-    // ✅ 모든 CarModel을 한 번에 조회
+    // 모든 CarModel을 한 번에 조회
     const allCarModels = await carModelRepository.findAllWithId();
     const carModelMap = new Map<string, number>();
     allCarModels.forEach((cm) => {
@@ -155,7 +155,7 @@ const carService = {
       carModelMap.set(key, cm.id);
     });
 
-    // ✅ 기존 차량 번호도 한 번에 조회
+    // 기존 차량 번호도 한 번에 조회
     const existingCarNumbers = await carRepository.findAllCarNumbersByCompany(user.companyId);
     const carNumberSet = new Set(existingCarNumbers);
 
@@ -189,7 +189,7 @@ const carService = {
         continue;
       }
 
-      // ✅ 검증 통과: validCars에 추가
+      // 검증 통과: validCars에 추가
       const item: CarCreateInput = {
         carNumber: r.carNumber,
         manufacturingYear: Number(r.manufacturingYear),

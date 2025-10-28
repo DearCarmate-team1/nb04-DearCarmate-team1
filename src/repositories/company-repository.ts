@@ -9,7 +9,7 @@ import type {
 import type { PrismaTransactionClient } from '../types/prisma.js';
 
 const companyRepository = {
-  // 회사 등록
+  /** 회사 등록 */
   async create(companyData: CreateCompanyDto) {
     return prisma.company.create({
       data: {
@@ -20,7 +20,7 @@ const companyRepository = {
     });
   },
 
-  // 회사 목록 조회
+  /** 회사 목록 조회 */
   async getAll(query: GetCompaniesDto, tx?: PrismaTransactionClient) {
     const db = tx ?? prisma;
     const { page = 1, pageSize = 10, searchBy, keyword } = query;
@@ -49,7 +49,7 @@ const companyRepository = {
       return { companies, total };
   },
 
-  // 회사별 유저 조회
+  /** 회사별 유저 조회 */
   async getUsersByCompany(query: GetUsersByCompanyDto, tx?: PrismaTransactionClient) {
     const db = tx ?? prisma;
     const { page = 1, pageSize = 10, searchBy, keyword } = query;
@@ -83,7 +83,7 @@ const companyRepository = {
       return { users, total };
   },
 
-  // 회사 수정
+  /** 회사 수정 */
   async update(companyId: number, companyData: UpdateCompanyDto) { 
     return prisma.company.update({
       where: { id: companyId },
@@ -95,12 +95,12 @@ const companyRepository = {
     });
   },
 
-  // 회사 삭제
+  /** 회사 삭제 */
   async delete(companyId: number) {
     await prisma.company.delete({ where: { id: companyId } });
   },
 
-  // 유저 회원가입 시, 회사명과 인증코드를 검증하기 위해 추가
+  /** 유저 회원가입 시, 회사명과 인증코드를 검증하기 위해 추가 */
   async findByNameAndAuthCode(name: string, authCode: string) {
     return prisma.company.findFirst({
       where: {
@@ -109,21 +109,21 @@ const companyRepository = {
     });
   },
 
-  // 이름으로 회사 찾기
+  /** 이름으로 회사 찾기 */
   async findByName(name: string) {
     return prisma.company.findFirst({
       where: { name },
     });
   },
 
-  // 인증 코드로 회사 찾기
+  /** 인증 코드로 회사 찾기 */
   async findByAuthCode(authCode: string) {
     return prisma.company.findUnique({
       where: { authCode },
     });
   },
 
-  // ID로 회사 찾기
+  /** ID로 회사 찾기 */
   async findById(companyId: number) {
     return prisma.company.findUnique({
       where: { id: companyId },

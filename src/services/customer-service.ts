@@ -9,11 +9,12 @@ import { cleanupContractDocuments } from '../utils/contract-cleanup.js';
 import prisma from '../configs/prisma-client.js';
 
 const customerService = {
+  /** 고객 등록 */
   async createCustomer(companyId: number, data: CreateCustomerDTO) {
     return await customerRepository.create(companyId, data);
   },
 
-  // 고객 목록 조회 (검색 + 페이지네이션)
+  /** 고객 목록 조회 (검색 + 페이지네이션) */
   async getCustomers(
     companyId: number,
     searchBy: string = 'name',
@@ -39,21 +40,21 @@ const customerService = {
     };
   },
 
-  // 고객 상세 조회
+  /** 고객 상세 조회 */
   async getCustomerById(companyId: number, customerId: number) {
     const customer = await customerRepository.findById(companyId, customerId);
     if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
     return customer;
   },
 
-  // 고객 정보 수정
+  /** 고객 정보 수정 */
   async updateCustomer(companyId: number, customerId: number, data: UpdateCustomerDTO) {
     const customer = await customerRepository.findById(companyId, customerId);
     if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
     return await customerRepository.update(customerId, data);
   },
 
-  // 고객 삭제 (관련 계약 문서들의 물리적 파일도 함께 삭제)
+  /** 고객 삭제 (관련 계약 문서들의 물리적 파일도 함께 삭제) */
   async deleteCustomer(companyId: number, customerId: number) {
     const customer = await customerRepository.findById(companyId, customerId);
     if (!customer) throw new NotFoundError('고객을 찾을 수 없습니다.');
@@ -71,7 +72,7 @@ const customerService = {
     return await customerRepository.delete(customerId);
   },
 
-  /** 📤 고객 CSV 대용량 업로드 (메모리 기반 - 디스크 저장 안 함) */
+  /** 고객 CSV 대용량 업로드 (메모리 기반 - 디스크 저장 안 함) */
   async bulkUpload(
     user: AuthUser,
     file: Express.Multer.File | undefined,

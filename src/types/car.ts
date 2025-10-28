@@ -1,4 +1,4 @@
-/** 🚗 차량 엔티티 */
+/** 차량 엔티티 */
 export interface CarEntity {
   id: number;
   carNumber: string;
@@ -18,7 +18,7 @@ export interface CarEntity {
   updatedAt: Date;
 }
 
-/** 🏭 차량 모델 엔티티 */
+/** 차량 모델 엔티티 */
 export interface CarModelEntity {
   id: number;
   manufacturer: string;
@@ -26,13 +26,13 @@ export interface CarModelEntity {
   type: string;
 }
 
-/** 🏭 Flat 형태 제조사/모델 */
+/** Flat 형태 제조사/모델 */
 export interface CarModelFlat {
   manufacturer: string;
   model: string;
 }
 
-/** 🚙 CSV 업로드용 Row 타입 */
+/** CSV 업로드용 Row 타입 */
 export interface CarCsvRow {
   carNumber: string;
   manufacturer: string;
@@ -45,11 +45,7 @@ export interface CarCsvRow {
   accidentDetails?: string;
 }
 
-/** -------------------------------------------------
- * ✏️ Command Input (Service → Repository 입력)
- * ------------------------------------------------- */
-
-/** 🚗 차량 생성 입력 타입 */
+/** 차량 생성 입력 타입 */
 export interface CarCreateInput {
   carNumber: string;
   manufacturingYear: number;
@@ -63,7 +59,7 @@ export interface CarCreateInput {
   status?: 'possession' | 'contractProceeding' | 'contractCompleted';
 }
 
-/** 🚙 차량 수정 입력 타입 */
+/** 차량 수정 입력 타입 */
 export interface CarUpdateInput {
   carNumber?: string;
   manufacturingYear?: number;
@@ -76,11 +72,7 @@ export interface CarUpdateInput {
   modelId?: number;
 }
 
-/** -------------------------------------------------
- * 📤 Response Models (Controller → Client)
- * ------------------------------------------------- */
-
-/** 🚗 단일 차량 응답 모델 (CarEntity 기반, 내부 필드 제외) */
+/** 단일 차량 응답 모델 */
 export type CarResponseModel = Omit<
   CarEntity,
   'companyId' | 'modelId' | 'createdAt' | 'updatedAt'
@@ -89,7 +81,7 @@ export type CarResponseModel = Omit<
   accidentDetails: string; // 동일
 };
 
-/** 📋 차량 목록 응답용 */
+/** 차량 목록 응답용 */
 export interface CarListResponse {
   currentPage: number;
   totalPages: number;
@@ -97,7 +89,7 @@ export interface CarListResponse {
   data: CarResponseModel[];
 }
 
-/** 🚚 대용량 업로드 결과 */
+/** 대용량 업로드 결과 */
 export interface BulkUploadResult {
   successCount: number;
   failureCount: number;

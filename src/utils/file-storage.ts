@@ -7,29 +7,19 @@ import { saveBufferToLocal } from './file-upload.js';
 
 const isDevelopment = NODE_ENV === 'development';
 
-/**
- * 파일 업로드 옵션
- */
+/** 파일 업로드 옵션 */
 export type FileUploadOptions = {
-  /** Cloudinary resource type: 'image' (이미지) | 'raw' (문서) */
+  /** Cloudinary resource type */
   resourceType: 'image' | 'raw';
-  /** Cloudinary folder path (예: 'dear-carmate/images') */
+  /** Cloudinary folder path */
   folder: string;
-  /** Local subdirectory (예: 'images' | 'documents') */
+  /** Local subdirectory */
   subDir: 'images' | 'documents';
-  /** Cloudinary public_id에서 확장자 제거 여부 (이미지: true, 문서: false) */
+  /** Cloudinary public_id에서 확장자 제거 여부 */
   removeExtension?: boolean;
 };
 
-/**
- * 통합 파일 업로드 함수 (환경별 분기)
- * - 개발 환경: Buffer → 로컬 저장 → 절대 URL 반환
- * - 프로덕션: Buffer → Cloudinary 업로드 → HTTPS URL 반환
- *
- * @param file - Multer 파일 객체 (buffer 포함)
- * @param options - 업로드 옵션
- * @returns 업로드된 파일의 URL
- */
+/** 통합 파일 업로드 함수 (환경별 분기) */
 export async function uploadFile(
   file: Express.Multer.File | undefined,
   options: FileUploadOptions
@@ -50,13 +40,7 @@ export async function uploadFile(
   return uploadToCloudinary(file.buffer, fileName, options);
 }
 
-/**
- * Cloudinary 업로드 헬퍼 함수
- * @param buffer - 파일 버퍼
- * @param fileName - 디코딩된 파일명
- * @param options - 업로드 옵션
- * @returns Cloudinary secure_url
- */
+/** Cloudinary 업로드 헬퍼 함수 */
 async function uploadToCloudinary(
   buffer: Buffer,
   fileName: string,

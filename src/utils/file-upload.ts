@@ -5,22 +5,14 @@ import { generateSafeFileNameFromDecoded } from '../configs/multer.js';
 
 const BASE_UPLOAD_DIR = path.resolve('uploads');
 
-/**
- * 디렉토리가 없으면 생성
- */
+/** 디렉토리가 없으면 생성 */
 function ensureDirExists(dir: string): void {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
 
-/**
- * Buffer를 로컬 디스크에 저장하고 절대 URL 반환
- * @param buffer - 파일 버퍼
- * @param decodedFileName - 이미 디코딩된 파일명 (UTF-8)
- * @param subDir - uploads 하위 디렉토리 ('images' | 'documents')
- * @returns 백엔드 서버 절대 URL (예: http://localhost:3001/uploads/images/xxx.jpg)
- */
+/** Buffer를 로컬 디스크에 저장하고 절대 URL 반환 */
 export function saveBufferToLocal(
   buffer: Buffer,
   decodedFileName: string,

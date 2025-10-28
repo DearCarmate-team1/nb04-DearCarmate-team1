@@ -7,7 +7,7 @@ export const validate =
     try {
       const validatedData = schema.parse(req[part]);
 
-      // ✅ query와 params는 읽기 전용이므로 defineProperty 사용
+      // query와 params는 읽기 전용이므로 defineProperty 사용
       if (part === 'query' || part === 'params') {
         Object.defineProperty(req, part, {
           value: validatedData,

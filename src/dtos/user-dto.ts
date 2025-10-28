@@ -30,7 +30,6 @@ export const updateUserSchema = z
     path: ['passwordConfirmation'],
   });
 
-// 스키마에서 타입 추론 (DTO 역할)
 export type CreateUserDto = z.infer<typeof createUserSchema>;
 
 export interface UpdateUserDto {

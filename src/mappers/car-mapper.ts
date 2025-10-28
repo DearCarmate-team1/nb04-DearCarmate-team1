@@ -9,13 +9,8 @@ import type {
 import type { Car, CarModel } from '@prisma/client';
 import type { CreateCarDto, UpdateCarDto, CarStatus } from '../dtos/car-dto.js';
 
-/** -------------------------------------------------
- * 🧩 Car Mapper
- * - Prisma ↔ Domain ↔ Response 변환
- * - 사이드 이펙트 차단, 타입 안전성 보장
- * ------------------------------------------------- */
 export const CarMapper = {
-  /** 🚗 Car + Model join → CarEntity 변환 */
+  /** Car + Model join → CarEntity 변환 */
   fromPrisma(car: Car & { model: CarModel }): CarEntity {
     return {
       id: car.id,
@@ -37,7 +32,7 @@ export const CarMapper = {
     };
   },
 
-  /** 🏭 CarModel → CarModelEntity 변환 */
+  /** CarModel → CarModelEntity 변환 */
   fromModel(model: CarModel): CarModelEntity {
     return {
       id: model.id,
@@ -47,7 +42,7 @@ export const CarMapper = {
     };
   },
 
-  /** 🚗 CarEntity → CarResponseModel 변환 (Controller 출력용) */
+  /** CarEntity → CarResponseModel 변환 */
   toResponseModel(entity: CarEntity): CarResponseModel {
     const { companyId, modelId, createdAt, updatedAt, ...rest } = entity;
     return {
@@ -57,7 +52,7 @@ export const CarMapper = {
     };
   },
 
-  /** 📋 CarEntity[] → CarListResponse 변환 */
+  /** CarEntity[] → CarListResponse 변환 */
   toListResponse(
     entities: CarEntity[],
     currentPage: number,
@@ -72,7 +67,7 @@ export const CarMapper = {
     };
   },
 
-  /** 🚗 CreateCarDto → CarCreateInput 변환 (Service 입력용) */
+  /** CreateCarDto → CarCreateInput 변환 */
   fromCreateDto(dto: CreateCarDto, companyId: number, modelId: number): CarCreateInput {
     const result: CarCreateInput = {
       carNumber: dto.carNumber,
@@ -91,7 +86,7 @@ export const CarMapper = {
     return result;
   },
 
-  /** 🚙 UpdateCarDto → CarUpdateInput 변환 (Service 입력용) */
+  /** UpdateCarDto → CarUpdateInput 변환 */
   fromUpdateDto(dto: UpdateCarDto): CarUpdateInput {
     const result: CarUpdateInput = {};
 
