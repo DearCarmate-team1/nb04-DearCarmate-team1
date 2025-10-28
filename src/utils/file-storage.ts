@@ -80,6 +80,7 @@ async function uploadToCloudinary(
         unique_filename: false,
         type: 'upload', // 명시적 업로드 타입 설정
         access_mode: 'public', // 공개 접근 허용
+        invalidate: true, // CDN 캐시 무효화
       },
       (error, result: UploadApiResponse | undefined) => {
         if (error) {
