@@ -221,6 +221,7 @@ erDiagram
 
     Contract ||--o{ ContractDocument : "1:N"
     Contract ||--o{ Meeting : "1:N"
+    Meeting ||--o{ Notification : "1:N"
 
     Company {
         int id PK "회사 ID"
@@ -282,6 +283,12 @@ erDiagram
         int id PK "미팅 ID"
         datetime date "미팅 일시"
         int contractId FK "계약"
+    }
+
+    Notification {
+        int id PK "알림 ID"
+        datetime alarmTime "알림 시간"
+        int meetingId FK "미팅"
     }
 ```
 
