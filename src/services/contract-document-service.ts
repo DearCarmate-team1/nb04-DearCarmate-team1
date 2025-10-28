@@ -9,8 +9,8 @@ const contractDocumentService = {
   },
 
   /** 계약서 업로드용 계약 목록 조회 */
-  async draftList() {
-    return await contractDocumentRepository.findDrafts();
+  async draftList(companyId: number) {
+    return await contractDocumentRepository.findDrafts(companyId);
   },
 
   /**

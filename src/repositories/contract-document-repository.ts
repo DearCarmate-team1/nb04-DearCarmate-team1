@@ -25,9 +25,9 @@ const contractDocumentRepository = {
   },
 
   /** 문서 업로드용 계약 목록 조회 */
-  async findDrafts() {
+  async findDrafts(companyId: number) {
     const contracts = await prisma.contract.findMany({
-      where: { status: 'contractSuccessful', documents: { none: {} } },
+      where: { companyId, status: 'contractSuccessful', documents: { none: {} } },
       include: {
         car: { select: { carNumber: true, model: { select: { model: true } } } },
         customer: { select: { name: true } },
