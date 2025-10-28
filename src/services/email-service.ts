@@ -37,10 +37,10 @@ const emailService = {
       { expiresIn: '7d' }
     );
 
-    // 다운로드 링크 생성
+    // 다운로드 링크 생성 (JWT 토큰 URL 인코딩)
     const downloadLinks = documents
       .map((doc) => {
-        const downloadUrl = `${BASE_URL}/contractDocuments/download?token=${downloadToken}&docId=${doc.id}`;
+        const downloadUrl = `${BASE_URL}/contractDocuments/download?token=${encodeURIComponent(downloadToken)}&docId=${doc.id}`;
         return `<li style="margin: 8px 0;"><a href="${downloadUrl}" style="color: #007bff; text-decoration: none; font-size: 15px;">${doc.fileName}</a></li>`;
       })
       .join('');
@@ -92,6 +92,11 @@ const emailService = {
       from: EMAIL_FROM,
       subject: `[Dear Carmate] 계약서가 도착했습니다 - 계약 번호 #${contractId}`,
       html: htmlContent,
+      trackingSettings: {
+        clickTracking: {
+          enable: false, // 링크 추적 비활성화 (토큰 보호)
+        },
+      },
     };
 
     try {

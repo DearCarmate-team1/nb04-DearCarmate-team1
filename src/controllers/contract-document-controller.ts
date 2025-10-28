@@ -5,6 +5,7 @@ import path from 'path';
 import jwt from 'jsonwebtoken';
 import { NODE_ENV, DOWNLOAD_TOKEN_SECRET } from '../configs/constants.js';
 import { BadRequestError, UnauthorizedError } from '../configs/custom-error.js';
+import cloudinary from '../configs/cloudinary-config.js';
 
 export const contractDocumentController = {
   // 계약서 목록 조회 (문서가 1건 이상인 계약 목록)
@@ -74,6 +75,34 @@ export const contractDocumentController = {
 
       // Cloudinary URL로 리다이렉트
       if (NODE_ENV !== 'development' || isCloudinaryUrl) {
+        // Cloudinary URL인 경우 서명된 URL 생성
+        if (isCloudinaryUrl) {
+          try {
+            // Cloudinary URL에서 public_id와 version 추출
+            const urlMatch = file.filePath.match(/\/upload\/(?:v(\d+)\/)?(.+)$/);
+            if (urlMatch && urlMatch[2]) {
+              const version = urlMatch[1]; // version 번호
+              const publicId = urlMatch[2]; // public_id
+
+              // 서명된 URL 생성 (1시간 유효)
+              const signedUrl = cloudinary.url(publicId, {
+                resource_type: 'raw',
+                type: 'upload',
+                sign_url: true,
+                secure: true,
+                version: version,
+                expires_at: Math.floor(Date.now() / 1000) + 3600, // 1시간 후 만료
+              });
+
+              res.redirect(signedUrl);
+              return;
+            }
+          } catch (error) {
+            console.error('Cloudinary 서명 URL 생성 실패:', error);
+            // 실패 시 원본 URL로 리다이렉트 시도
+          }
+        }
+
         res.redirect(file.filePath);
         return;
       }
@@ -105,6 +134,31 @@ export const contractDocumentController = {
 
     // 프로덕션: Cloudinary URL로 리다이렉트
     if (NODE_ENV !== 'development' || isCloudinaryUrl) {
+      // Cloudinary URL인 경우 서명된 URL 생성
+      if (isCloudinaryUrl) {
+        try {
+          const urlMatch = file.filePath.match(/\/upload\/(?:v(\d+)\/)?(.+)$/);
+          if (urlMatch && urlMatch[2]) {
+            const version = urlMatch[1]; // version 번호
+            const publicId = urlMatch[2]; // public_id
+
+            const signedUrl = cloudinary.url(publicId, {
+              resource_type: 'raw',
+              type: 'upload',
+              sign_url: true,
+              secure: true,
+              version: version,
+              expires_at: Math.floor(Date.now() / 1000) + 3600,
+            });
+
+            res.redirect(signedUrl);
+            return;
+          }
+        } catch (error) {
+          console.error('Cloudinary 서명 URL 생성 실패:', error);
+        }
+      }
+
       res.redirect(file.filePath);
       return;
     }
