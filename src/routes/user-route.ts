@@ -4,6 +4,7 @@ import userController from '../controllers/user-controller.js';
 import { createUserSchema, updateUserSchema } from '../dtos/user-dto.js';
 import { validate } from '../middlewares/validate.js';
 import { authenticate } from '../middlewares/authenticate.js';
+import { isAdmin } from '../middlewares/authorize.js';
 
 const router = Router();
 
@@ -194,7 +195,7 @@ router.delete('/me', authenticate, asyncHandler(userController.deleteMe));
  *       404:
  *         description: 사용자를 찾을 수 없음
  */
-router.get('/:id', asyncHandler(userController.getUserById));
+router.get('/:id', authenticate, isAdmin, asyncHandler(userController.getUserById));
 
 /**
  * @swagger
@@ -235,7 +236,7 @@ router.get('/:id', asyncHandler(userController.getUserById));
  *       404:
  *         description: 사용자를 찾을 수 없음
  */
-router.patch('/:id', asyncHandler(userController.updateUser));
+router.patch('/:id', authenticate, isAdmin, asyncHandler(userController.updateUser));
 
 /**
  * @swagger
@@ -260,6 +261,6 @@ router.patch('/:id', asyncHandler(userController.updateUser));
  *       404:
  *         description: 사용자를 찾을 수 없음
  */
-router.delete('/:id', asyncHandler(userController.deleteUser));
+router.delete('/:id', authenticate, isAdmin, asyncHandler(userController.deleteUser));
 
 export default router;
