@@ -20,7 +20,7 @@ const carRepository = {
     const where: Prisma.CarWhereInput = { companyId };
     if (status && status !== 'total') where.status = status as CarStatus;
     if (searchBy === 'carNumber' && keyword) where.carNumber = { contains: keyword };
-    if (searchBy === 'model' && keyword) where.model = { model: { contains: keyword } };
+    if (searchBy === 'model' && keyword) where.model = { model: { contains: keyword, mode: 'insensitive' } };
 
     const totalItemCount = await prisma.car.count({ where });
     const data = await prisma.car.findMany({

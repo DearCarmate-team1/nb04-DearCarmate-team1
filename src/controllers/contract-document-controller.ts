@@ -7,7 +7,7 @@ import { NODE_ENV, DOWNLOAD_TOKEN_SECRET } from '../configs/constants.js';
 import { BadRequestError, UnauthorizedError } from '../configs/custom-error.js';
 import cloudinary from '../configs/cloudinary-config.js';
 
-export const contractDocumentController = {
+const contractDocumentController = {
   // 계약서 목록 조회 (문서가 1건 이상인 계약 목록)
   async list(req: Request, res: Response): Promise<void> {
     const { page = 1, pageSize = 10, searchBy, keyword } = req.query;
@@ -180,3 +180,5 @@ export const contractDocumentController = {
     res.sendFile(absolutePath);
   },
 };
+
+export default contractDocumentController;
