@@ -5,6 +5,7 @@ import { BadRequestError, ForbiddenError, NotFoundError } from '../configs/custo
 import contractDocumentRepository from '../repositories/contract-document-repository.js';
 import { deletePhysicalFile } from '../utils/file-delete.js';
 import { cleanupContractDocuments } from '../utils/contract-cleanup.js';
+import emailService from './email-service.js';
 import prisma from '../configs/prisma-client.js';
 import type {
   CreateContractDto,
@@ -224,6 +225,28 @@ const contractService = {
             await contractRepository.updateContractDocument(doc.id, contractId);
           })
         );
+
+        // 8. 계약서 업로드 완료 시 이메일 발송
+        const customer = await customerRepository.findById(user.companyId, contract.customerId);
+        const car = await carRepository.findById(contract.carId);
+
+        if (customer?.email && car) {
+          const carName = `${car.model.manufacturer} ${car.model.model} (${car.carNumber})`;
+
+          emailService.sendContractEmail({
+            customerEmail: customer.email,
+            customerName: customer.name,
+            customerId: customer.id,
+            contractId,
+            carName,
+            documents: dto.contractDocuments.map(doc => ({
+              id: doc.id,
+              fileName: doc.fileName,
+            })),
+          }).catch((err) => {
+            console.error('이메일 발송 실패:', err);
+          });
+        }
       }
 
       console.log(`✅ 계약 수정 시 ${documentsToDelete.length}개 문서 파일 삭제`);
